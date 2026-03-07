@@ -1,0 +1,115 @@
+# -------------------------------------------
+# Miscellaneous
+# -------------------------------------------
+
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+Thumbs.db
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# -------------------------------------------
+# IntelliJ / Android Studio
+# -------------------------------------------
+
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VSCode
+.vscode/
+
+# -------------------------------------------
+# Flutter / Dart / Pub
+# -------------------------------------------
+
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+.metadata
+
+# Generated files (codegen)
+*.g.dart
+*.freezed.dart
+
+# -------------------------------------------
+# Obfuscation / Symbolication
+# -------------------------------------------
+
+app.*.symbols
+app.*.map.json
+
+# -------------------------------------------
+# Android
+# -------------------------------------------
+
+android/.gradle/
+android/local.properties
+
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Signing
+*.jks
+*.keystore
+android/key.properties
+
+# Google Services
+android/app/src/*/google-services.json
+
+# -------------------------------------------
+# iOS
+# -------------------------------------------
+
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+DerivedData/
+*.xcworkspace
+*.xcuserdata/
+*.xcuserstate
+
+# GoogleService
+ios/Runner/GoogleService-Info.plist
+
+# -------------------------------------------
+# Web
+# -------------------------------------------
+
+build/web/
+
+# -------------------------------------------
+# Environment Files
+# -------------------------------------------
+
+.env
+.env.*
+*.env
+
+# -------------------------------------------
+# Logs
+# -------------------------------------------
+
+*.log
