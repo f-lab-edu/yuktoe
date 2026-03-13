@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/views/logo.dart';
 import 'package:yuktoe/gen/assets.gen.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
+
+  static const _appTitle = '내꿈은육퇴';
+  static const _appSubtitle = '우리 아기 성장 기록';
+  static const _kakaoLoginText = '카카오로 시작하기';
+  static const _googleLoginText = 'Google로 시작하기';
+  static const _appleLoginText = 'Apple로 시작하기';
+
+  static const _horizontalPadding = 32.0;
+  static const _topSpacing = 48.0;
+  static const _logoTitleSpacing = 16.0;
+  static const _titleSubtitleSpacing = 8.0;
+  static const _buttonSectionSpacing = 64.0;
+  static const _buttonSpacing = 16.0;
 
   @override
   Widget build(BuildContext context) {
@@ -15,60 +29,60 @@ class LoginView extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color.fromARGB(255, 121, 195, 255), Colors.white],
+            colors: [AppColors.loginGradientTop, AppColors.backgroundPrimary],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 48),
+                  const SizedBox(height: _topSpacing),
                   Logo(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: _logoTitleSpacing),
                   const Text(
-                    '내꿈은육퇴',
+                    _appTitle,
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF101828),
+                      color: AppColors.textPrimary,
                       letterSpacing: 0.37,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: _titleSubtitleSpacing),
                   const Text(
-                    '우리 아기 성장 기록',
+                    _appSubtitle,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Color(0xFF6A7282),
+                      color: AppColors.textSecondary,
                       letterSpacing: -0.31,
                     ),
                   ),
-                  const SizedBox(height: 64),
+                  const SizedBox(height: _buttonSectionSpacing),
                   SocialLoginButton(
                     onPressed: () {},
-                    backgroundColor: const Color(0xFFFEE500),
+                    backgroundColor: AppColors.kakaoBackground,
                     icon: Assets.icons.kakao.svg(width: 24),
-                    label: '카카오로 시작하기',
-                    textColor: const Color(0xFF101828),
+                    label: _kakaoLoginText,
+                    textColor: AppColors.textPrimary,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: _buttonSpacing),
                   SocialLoginButton(
                     onPressed: () {},
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.backgroundPrimary,
                     icon: Assets.icons.google.svg(width: 24),
-                    label: 'Google로 시작하기',
-                    textColor: const Color(0xFF101828),
+                    label: _googleLoginText,
+                    textColor: AppColors.textPrimary,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: _buttonSpacing),
                   SocialLoginButton(
                     onPressed: () {},
-                    backgroundColor: Colors.black,
+                    backgroundColor: AppColors.black,
                     icon: Assets.icons.apple.svg(width: 24),
-                    label: 'Apple로 시작하기',
-                    textColor: Colors.white,
+                    label: _appleLoginText,
+                    textColor: AppColors.textOnDark,
                   ),
                 ],
               ),
@@ -96,11 +110,17 @@ class SocialLoginButton extends StatelessWidget {
     required this.textColor,
   });
 
+  static const _buttonHeight = 56.0;
+  static const _buttonRadius = 16.0;
+  static const _iconLabelSpacing = 12.0;
+  static const _buttonFontSize = 16.0;
+  static const _buttonLetterSpacing = -0.31;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: _buttonHeight,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -108,21 +128,21 @@ class SocialLoginButton extends StatelessWidget {
           foregroundColor: textColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(_buttonRadius),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             icon,
-            const SizedBox(width: 12),
+            const SizedBox(width: _iconLabelSpacing),
             Text(
               label,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: _buttonFontSize,
                 fontWeight: FontWeight.w600,
                 color: textColor,
-                letterSpacing: -0.31,
+                letterSpacing: _buttonLetterSpacing,
               ),
             ),
           ],
