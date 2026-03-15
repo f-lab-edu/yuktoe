@@ -2,7 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
-import 'package:yuktoe/domain/models/auth/raw_auth_session.dart';
+import 'package:yuktoe/domain/models/auth/auth_session_data.dart';
 
 import 'auth_service.dart';
 
@@ -16,7 +16,7 @@ class SupabaseAuthService implements AuthService {
   }) : _client = client;
 
   @override
-  Future<Result<RawAuthSession?>> getCurrentSession() async {
+  Future<Result<AuthSessionData?>> getCurrentSession() async {
     try {
       final session = _client.auth.currentSession;
       return Result.ok(_mapSession(session));
@@ -60,13 +60,13 @@ class SupabaseAuthService implements AuthService {
 
   Future<void> _signInWithApple() async {}
 
-  RawAuthSession? _mapSession(Session? session) {
+  AuthSessionData? _mapSession(Session? session) {
     if (session == null) return null;
 
     final user = session.user;
     final metadata = user.userMetadata ?? const {};
 
-    return RawAuthSession(
+    return AuthSessionData(
       userId: user.id,
       accessToken: session.accessToken,
       email: user.email,
