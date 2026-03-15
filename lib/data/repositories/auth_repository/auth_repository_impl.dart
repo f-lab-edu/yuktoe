@@ -3,8 +3,6 @@ import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/data/services/auth_service/auth_service.dart';
 import 'package:yuktoe/domain/models/auth/app_session.dart';
-import 'package:yuktoe/domain/models/auth/app_user.dart';
-import 'package:yuktoe/domain/models/auth/auth_session_data.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthService _authService;
@@ -23,10 +21,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<AppSession?>> getSession() async {
     final result = await _authService.getCurrentSession();
     switch (result) {
-      case Ok<AuthSessionData?>():
-        _cachedSession = _mapSession(result.value);
+      case Ok<AppSession?>():
+        _cachedSession = result.value;
         return Result.ok(_cachedSession);
-      case Error<AuthSessionData?>():
+      case Error<AppSession?>():
         _cachedSession = null;
         return Result.error(result.error);
     }
@@ -54,14 +52,5 @@ class AuthRepositoryImpl implements AuthRepository {
       case Error<void>():
         return Result.error(result.error);
     }
-  }
-
-  AppSession? _mapSession(AuthSessionData? raw) {
-    if (raw == null) return null;
-
-    return AppSession(
-      accessToken: raw.accessToken,
-      user: AppUser(id: raw.userId, email: raw.email, name: raw.name),
-    );
   }
 }
