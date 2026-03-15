@@ -35,8 +35,13 @@ class AuthRepositoryImpl implements AuthRepository {
     final result = await _authService.signIn(provider);
     switch (result) {
       case Ok<void>():
-        await getSession();
-        return Result.ok(null);
+        final sessionResult = await getSession();
+        switch (sessionResult) {
+          case Ok<AppSession?>():
+            return Result.ok(null);
+          case Error<AppSession?>():
+            return Result.error(sessionResult.error);
+        }
       case Error<void>():
         return Result.error(result.error);
     }
