@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
+import 'package:yuktoe/core/error/app_exception.dart';
+import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/domain/models/auth/raw_auth_session.dart';
 
 import 'auth_service.dart';
@@ -14,36 +16,42 @@ class SupabaseAuthService implements AuthService {
   }) : _client = client;
 
   @override
-  Stream<RawAuthSession?> watchSession() {
-    return _client.auth.onAuthStateChange.map(
-      (state) => _mapSession(state.session),
-    );
-  }
-
-  @override
-  Future<RawAuthSession?> getCurrentSession() async {
-    final session = _client.auth.currentSession;
-    return _mapSession(session);
-  }
-
-  @override
-  Future<void> signIn(SocialAuthProvider provider) async {
-    switch (provider) {
-      case SocialAuthProvider.google:
-        await _signInWithGoogle();
-        return;
-      case SocialAuthProvider.apple:
-        await _signInWithApple();
-        return;
-      case SocialAuthProvider.kakao:
-        await _signInWithKakao();
-        return;
+  Future<Result<RawAuthSession?>> getCurrentSession() async {
+    try {
+      final session = _client.auth.currentSession;
+      return Result.ok(_mapSession(session));
+    } on Exception catch (e) {
+      return Result.error(
+        AppException('Failed to get current session', cause: e),
+      );
     }
   }
 
   @override
-  Future<void> signOut() async {
-    await _client.auth.signOut();
+  Future<Result<void>> signIn(SocialAuthProvider provider) async {
+    try {
+      switch (provider) {
+        case SocialAuthProvider.google:
+          await _signInWithGoogle();
+        case SocialAuthProvider.apple:
+          await _signInWithApple();
+        case SocialAuthProvider.kakao:
+          await _signInWithKakao();
+      }
+      return Result.ok(null);
+    } on Exception catch (e) {
+      return Result.error(AppException('Failed to sign in', cause: e));
+    }
+  }
+
+  @override
+  Future<Result<void>> signOut() async {
+    try {
+      await _client.auth.signOut();
+      return Result.ok(null);
+    } on Exception catch (e) {
+      return Result.error(AppException('Failed to sign out', cause: e));
+    }
   }
 
   Future<void> _signInWithGoogle() async {}
