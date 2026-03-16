@@ -10,4 +10,6 @@ class AppEnv {
   static String get appAuthCallbackHost => dotenv.env['APP_AUTH_CALLBACK_HOST']!;
 
   static String get authRedirectUri => '$appScheme://$appAuthCallbackHost';
+
+  static String get kakaoNativeAppKey => dotenv.env['KAKAO_NATIVE_APP_KEY']!;
 }

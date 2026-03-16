@@ -1,3 +1,4 @@
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
@@ -57,7 +58,25 @@ class SupabaseAuthService implements AuthService {
 
   Future<void> _signInWithGoogle() async {}
 
-  Future<void> _signInWithKakao() async {}
+  Future<void> _signInWithKakao() async {
+    OAuthToken token;
+
+    if (await isKakaoTalkInstalled()) {
+      token = await UserApi.instance.loginWithKakaoTalk();
+    } else {
+      token = await UserApi.instance.loginWithKakaoAccount();
+    }
+
+    final idToken = token.idToken;
+    if (idToken == null) {
+      throw AppException('카카오 ID 토큰을 받지 못했습니다. ');
+    }
+
+    await _client.auth.signInWithIdToken(
+      provider: OAuthProvider.kakao,
+      idToken: idToken,
+    );
+  }
 
   Future<void> _signInWithApple() async {}
 

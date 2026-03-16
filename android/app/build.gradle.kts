@@ -5,6 +5,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+}
+
+def kakaoNativeAppKey = localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")
+
 android {
     namespace = "com.swell.yuktoe"
     compileSdk = flutter.compileSdkVersion
@@ -28,6 +38,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = kakaoNativeAppKey
+
     }
 
     buildTypes {
