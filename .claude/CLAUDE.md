@@ -83,3 +83,22 @@ State: `.omc/state/`, `.omc/state/sessions/{sessionId}/`, `.omc/notepad.md`, `.o
 Say "setup omc" or run `/oh-my-claudecode:omc-setup`.
 
 <!-- OMC:END -->
+
+# Project Instructions
+
+## Architecture
+- When explaining Flutter-related code, use Provider-based dependency injection and layered architecture as the default frame of reference.
+- When describing layers, clearly distinguish the responsibilities of Domain / Repository / Service / UI.
+
+## Pull Request Rules
+- When the user asks to create a pull request, follow the team's PR format.
+- Write the PR in Korean.
+- Always use the following section structure:
+  - `## 📝 Summary`
+  - `## 🔍 Changes`
+  - `## 🧪 Test` (only if tests are included)
+  - `## 🔗 Related Issues`
+- Do not include anything that is not supported by the diff.
+- Do not describe planned or pending work as if it were already completed.
+- Do not mix test-related content into `## 🔍 Changes`; put it in `## 🧪 Test` instead.
+- Do not guess unconfirmed issue numbers.
