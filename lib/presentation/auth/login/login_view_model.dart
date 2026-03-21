@@ -23,28 +23,26 @@ class LoginViewModel extends ChangeNotifier {
   Future<void> signIn(SocialAuthProvider provider) async {
     if (_isLoading) return;
 
-    _setLoading(true);
-    _clearError();
-
-    final result = await _authRepository.signIn(provider);
-
-    switch (result) {
-      case Ok<void>():
-        _session = _authRepository.session;
-      case Error<void>():
-        _session = null;
-        _errorMessage = result.error.message;
-    }
-
-    _setLoading(false);
-  }
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
-  void _clearError() {
+    _isLoading = true;
     _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await _authRepository.signIn(provider);
+
+      switch (result) {
+        case Ok<void>():
+          _session = _authRepository.session;
+        case Error<void>():
+          _session = null;
+          _errorMessage = result.error.message;
+      }
+    } catch (e) {
+      _session = null;
+      _errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }
