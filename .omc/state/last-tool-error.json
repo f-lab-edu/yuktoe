@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"flutter test 2>&1\",\"timeout\":120000,\"description\":\"Run Flutter tests\"}",
-  "error": "Exit code 1\n\r00:00 +0: loading /Users/nala/Desktop/yuktoe/test/widget_test.dart                                                                                                                                     \r00:01 +0: loading /Users/nala/Desktop/yuktoe/test/widget_test.dart                                                                                                                                     \r00:01 +0: loading /Users/nala/Desktop/yuktoe/test/data/repositories/auth_repository/aut...",
-  "timestamp": "2026-03-15T18:34:20.005Z",
-  "retry_count": 5
-}
