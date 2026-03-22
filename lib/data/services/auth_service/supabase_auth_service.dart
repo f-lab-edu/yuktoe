@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
+import 'package:yuktoe/core/config/app_env.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/domain/models/auth/app_session.dart';
@@ -56,7 +60,31 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
-  Future<void> _signInWithGoogle() async {}
+  Future<void> _signInWithGoogle() async {
+    final scopes = ['email', 'profile'];
+    final googleSignIn = GoogleSignIn.instance;
+    await googleSignIn.initialize(
+      serverClientId: AppEnv.googleWebClientId,
+      clientId: Platform.isAndroid
+          ? AppEnv.googleAndroidClientId
+          : AppEnv.googleIOSClientId,
+    );
+    final googleUser = await googleSignIn.authenticate();
+
+    final authorization =
+        await googleUser.authorizationClient.authorizationForScopes(scopes) ??
+        await googleUser.authorizationClient.authorizeScopes(scopes);
+    final idToken = googleUser.authentication.idToken;
+    if (idToken == null) {
+      throw AppException('Google ID 토큰을 받지 못했습니다.');
+    }
+
+    await _client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: authorization.accessToken,
+    );
+  }
 
   Future<void> _signInWithKakao() async {
     OAuthToken token;
