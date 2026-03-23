@@ -26,6 +26,8 @@ abstract class AppColors {
   static const brandPrimaryPressed = Color(0xFF1D4ED8);
   static const brandPrimaryLight = Color(0xFFEFF6FF);
 
+  static const error = Color(0xFFFB2C36);
+
   // App specific
   static const loginGradientTop = Color.fromARGB(255, 121, 195, 255);
   static const kakaoBackground = Color(0xFFFEE500);
