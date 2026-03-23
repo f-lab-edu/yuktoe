@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yuktoe/login/views/login_view.dart';
+import 'package:yuktoe/routing/router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,13 +10,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: '내꿈은육퇴',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2B7FFF)),
       ),
-      home: const LoginView(),
+      routerConfig: router,
     );
   }
 }
