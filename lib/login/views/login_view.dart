@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
+import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/common/views/logo.dart';
 import 'package:yuktoe/gen/assets.gen.dart';
 
@@ -42,22 +43,17 @@ class LoginView extends StatelessWidget {
                   const SizedBox(height: _topSpacing),
                   Logo(),
                   const SizedBox(height: _logoTitleSpacing),
-                  const Text(
+                  Text(
                     _appTitle,
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.display.bold.copyWith(
                       color: AppColors.textPrimary,
-                      letterSpacing: 0.37,
                     ),
                   ),
                   const SizedBox(height: _titleSubtitleSpacing),
-                  const Text(
+                  Text(
                     _appSubtitle,
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTextStyles.body.regular.copyWith(
                       color: AppColors.textSecondary,
-                      letterSpacing: -0.31,
                     ),
                   ),
                   const SizedBox(height: _buttonSectionSpacing),
@@ -113,8 +109,6 @@ class SocialLoginButton extends StatelessWidget {
   static const _buttonHeight = 56.0;
   static const _buttonRadius = 16.0;
   static const _iconLabelSpacing = 12.0;
-  static const _buttonFontSize = 16.0;
-  static const _buttonLetterSpacing = -0.31;
 
   @override
   Widget build(BuildContext context) {
@@ -138,12 +132,7 @@ class SocialLoginButton extends StatelessWidget {
             const SizedBox(width: _iconLabelSpacing),
             Text(
               label,
-              style: TextStyle(
-                fontSize: _buttonFontSize,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-                letterSpacing: _buttonLetterSpacing,
-              ),
+              style: AppTextStyles.body.semibold.copyWith(color: textColor),
             ),
           ],
         ),
