@@ -1,0 +1,626 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:yuktoe/common/design_system/app_colors.dart';
+import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/constants/enum/gender.dart';
+import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
+import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
+import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
+import 'package:yuktoe/onboarding/view_models/invite_code_view_model.dart';
+import 'package:yuktoe/routing/router.dart';
+
+class InviteCodeView extends StatefulWidget {
+  const InviteCodeView({super.key});
+
+  @override
+  State<InviteCodeView> createState() => _InviteCodeViewState();
+}
+
+class _InviteCodeViewState extends State<InviteCodeView> {
+  final _viewModel = InviteCodeViewModel();
+  late final BabyRegistrationRepository _repository = context
+      .read<BabyRegistrationRepository>();
+
+  static const _iconGradientStart = Color(0xFFF6339A);
+  static const _iconGradientEnd = Color(0xFFEC003F);
+  static const _buttonGradientStart = Color(0xFFF6339A);
+  static const _buttonGradientEnd = Color(0xFFEC003F);
+  static const _infoTitleColor = Color(0xFF1C398E);
+  static const _infoBodyColor = Color(0xFF1447E6);
+  static const _termsLinkColor = Color(0xFFE60076);
+  static const _cardGradientStart = Color(0xFF2B7FFF);
+  static const _cardGradientEnd = Color(0xFF4F39F6);
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onSubmit() async {
+    try {
+      final baby = await _repository.verifyInviteCode(_viewModel.code);
+
+      if (!mounted) return;
+
+      if (baby == null) {
+        _showNotFoundAlert();
+        return;
+      }
+
+      _showBabyConfirmModal(baby);
+    } catch (_) {
+      if (!mounted) return;
+      _showNotFoundAlert();
+    }
+  }
+
+  void _showNotFoundAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          '아기를 찾을 수 없어요',
+          style: AppTextStyles.title.bold.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          '입력한 초대 코드와 일치하는 아기가 없습니다.\n코드를 다시 확인해주세요.',
+          style: AppTextStyles.label.regular.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              '확인',
+              style: AppTextStyles.label.semibold.copyWith(
+                color: AppColors.brandPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBabyConfirmModal(BabySummary baby) {
+    final genderText = baby.gender == Gender.male ? '남자 아기' : '여자 아기';
+    final birthDate = baby.birthDate ?? baby.dueDate;
+    if (birthDate == null) return;
+
+    final dDay = DateTime.now().difference(birthDate).inDays;
+    final formattedDate =
+        '${birthDate.year}년 ${birthDate.month}월 ${birthDate.day}일';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          32,
+          24,
+          MediaQuery.of(sheetContext).padding.bottom + 24,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundPrimary,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.gray.t300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '이 아기가 맞나요?',
+              style: AppTextStyles.heading3.bold.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Baby info card
+            Container(
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.borderPrimary),
+              ),
+              child: Column(
+                children: [
+                  // Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [_cardGradientStart, _cardGradientEnd],
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          baby.name,
+                          style: AppTextStyles.heading2.bold.copyWith(
+                            color: AppColors.textOnDark,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          genderText,
+                          style: AppTextStyles.label.regular.copyWith(
+                            color: AppColors.textOnDark.withValues(alpha: 0.9),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Text(
+                            'D+$dDay',
+                            style: AppTextStyles.label.semibold.copyWith(
+                              color: AppColors.textOnDark,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Body
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.t100,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.calendar_today_outlined,
+                              size: 20,
+                              color: AppColors.primary.t600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '생년월일',
+                              style: AppTextStyles.caption.semibold.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              formattedDate,
+                              style: AppTextStyles.body.semibold.copyWith(
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(sheetContext).pop(),
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppColors.gray.t100,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '아니요',
+                          style: AppTextStyles.body.semibold.copyWith(
+                            color: AppColors.gray.t700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      context.push(
+                        AppRoutes.babyProfileSetup,
+                        extra: JoinBabyFlow(inviteCode: _viewModel.code),
+                      );
+                    },
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [_cardGradientStart, _cardGradientEnd],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '맞아요',
+                          style: AppTextStyles.body.semibold.copyWith(
+                            color: AppColors.textOnDark,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundPrimary,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundPrimary,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          '초대 코드 입력',
+          style: AppTextStyles.title.bold.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        titleSpacing: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.borderPrimary),
+        ),
+      ),
+      body: ListenableBuilder(
+        listenable: _viewModel,
+        builder: (context, _) {
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 48),
+                      _buildIcon(),
+                      const SizedBox(height: 32),
+                      _buildDescription(),
+                      const SizedBox(height: 32),
+                      _buildCodeField(),
+                      const SizedBox(height: 24),
+                      _buildInfoBox(),
+                      const SizedBox(height: 24),
+                      _buildTermsCheckbox(),
+                    ],
+                  ),
+                ),
+              ),
+              _buildSubmitButton(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildIcon() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_iconGradientStart, _iconGradientEnd],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: AppColors.black.withValues(alpha: 0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: const Center(
+        child: Icon(Icons.key_outlined, size: 40, color: AppColors.textOnDark),
+      ),
+    );
+  }
+
+  Widget _buildDescription() {
+    return Column(
+      children: [
+        Text(
+          '가족 초대 코드를 입력하세요',
+          style: AppTextStyles.heading3.bold.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '가족 구성원으로부터 받은 초대 코드를 입력하면\n아기 정보를 함께 공유할 수 있어요',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.label.regular.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCodeField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: AppTextStyles.label.semibold.copyWith(
+              color: AppColors.gray.t700,
+            ),
+            children: const [
+              TextSpan(text: '초대 코드 '),
+              TextSpan(
+                text: '*',
+                style: TextStyle(color: AppColors.error),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          onChanged: _viewModel.setCode,
+          textAlign: TextAlign.left,
+          style: const TextStyle(
+            fontSize: 18,
+            fontFamily: 'Menlo',
+            color: AppColors.textPrimary,
+            letterSpacing: 0.9,
+          ),
+          decoration: InputDecoration(
+            hintText: '예: ABC-123-XYZ',
+            hintStyle: TextStyle(
+              fontSize: 18,
+              fontFamily: 'Menlo',
+              color: AppColors.textPrimary.withValues(alpha: 0.5),
+              letterSpacing: 0.9,
+            ),
+            contentPadding: const EdgeInsets.all(16),
+            constraints: const BoxConstraints(minHeight: 64),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: AppColors.borderPrimary,
+                width: 2,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: AppColors.brandPrimary,
+                width: 2,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            '대시(-)를 포함하여 입력하세요',
+            style: AppTextStyles.caption.regular.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoBox() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.brandPrimaryLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primary.t200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: const BoxDecoration(
+              color: Color(0xFF2B7FFF),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                'i',
+                style: AppTextStyles.caption.bold.copyWith(
+                  color: AppColors.textOnDark,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '초대 코드는 어디서 받나요?',
+                  style: AppTextStyles.label.semibold.copyWith(
+                    color: _infoTitleColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '이미 등록된 가족 구성원의 설정 메뉴에서\n\'가족 초대하기\'를 통해 코드를 받을 수 있습니다.',
+                  style: AppTextStyles.caption.regular.copyWith(
+                    color: _infoBodyColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTermsCheckbox() {
+    return GestureDetector(
+      onTap: _viewModel.toggleAgreedToTerms,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Checkbox(
+              value: _viewModel.agreedToTerms,
+              onChanged: (_) => _viewModel.toggleAgreedToTerms(),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              activeColor: _termsLinkColor,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: AppTextStyles.label.medium,
+                children: [
+                  TextSpan(
+                    text: '서비스 이용약관',
+                    style: AppTextStyles.label.semibold.copyWith(
+                      color: _termsLinkColor,
+                    ),
+                  ),
+                  const TextSpan(
+                    text: ', ',
+                    style: TextStyle(color: Color(0xFF364153)),
+                  ),
+                  TextSpan(
+                    text: '개인정보 처리방침',
+                    style: AppTextStyles.label.semibold.copyWith(
+                      color: _termsLinkColor,
+                    ),
+                  ),
+                  const TextSpan(
+                    text: '에 동의합니다 ',
+                    style: TextStyle(color: Color(0xFF364153)),
+                  ),
+                  const TextSpan(
+                    text: '*',
+                    style: TextStyle(color: AppColors.error),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    final isEnabled = _viewModel.isValid;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: GestureDetector(
+        onTap: isEnabled ? _onSubmit : null,
+        child: AnimatedOpacity(
+          opacity: isEnabled ? 1.0 : 0.5,
+          duration: const Duration(milliseconds: 200),
+          child: Container(
+            width: double.infinity,
+            height: 56,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                colors: [_buttonGradientStart, _buttonGradientEnd],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: AppColors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                '다음으로',
+                style: AppTextStyles.body.bold.copyWith(
+                  color: AppColors.textOnDark,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
