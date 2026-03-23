@@ -3,24 +3,17 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
-import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
-import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
+import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/onboarding/view_models/baby_profile_setup_view_model.dart';
 
 class BabyProfileSetupView extends StatefulWidget {
-  final OnboardingFlow flow;
-
-  const BabyProfileSetupView({super.key, required this.flow});
+  const BabyProfileSetupView({super.key});
 
   @override
   State<BabyProfileSetupView> createState() => _BabyProfileSetupViewState();
 }
 
 class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
-  late final _viewModel = BabyProfileSetupViewModel(
-    flow: widget.flow,
-    repository: context.read<BabyRegistrationRepository>(),
-  );
   final _nicknameController = TextEditingController();
 
   static const _backgroundGradientTop = Color(0xFFEEF2FF);
@@ -38,21 +31,21 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
 
   @override
   void dispose() {
-    _viewModel.dispose();
     _nicknameController.dispose();
     super.dispose();
   }
 
   Future<void> _onSubmit() async {
+    final viewModel = context.read<BabyProfileSetupViewModel>();
     try {
-      await _viewModel.submit();
+      await viewModel.submit();
       if (!mounted) return;
       // TODO: 홈 화면으로 이동
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_viewModel.error ?? '오류가 발생했습니다.'),
+          content: Text(viewModel.error ?? '오류가 발생했습니다.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -61,36 +54,33 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<BabyProfileSetupViewModel>();
+
     return Scaffold(
-      body: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildRelationshipGrid(),
-                            const SizedBox(height: 32),
-                            _buildNicknameField(),
-                          ],
-                        ),
-                      ),
-                    ],
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRelationshipGrid(viewModel),
+                        const SizedBox(height: 32),
+                        _buildNicknameField(viewModel),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              _buildSubmitButton(),
-            ],
-          );
-        },
+            ),
+          ),
+          _buildSubmitButton(viewModel),
+        ],
       ),
     );
   }
@@ -172,7 +162,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     );
   }
 
-  Widget _buildRelationshipGrid() {
+  Widget _buildRelationshipGrid(BabyProfileSetupViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -188,12 +178,12 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
           physics: const NeverScrollableScrollPhysics(),
           children: _relationshipOptions.map((option) {
             final (relationship, emoji, label) = option;
-            final isSelected = _viewModel.relationship == relationship;
+            final isSelected = viewModel.relationship == relationship;
             return _RelationshipCard(
               emoji: emoji,
               label: label,
               isSelected: isSelected,
-              onTap: () => _viewModel.setRelationship(relationship),
+              onTap: () => viewModel.setRelationship(relationship),
             );
           }).toList(),
         ),
@@ -201,7 +191,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     );
   }
 
-  Widget _buildNicknameField() {
+  Widget _buildNicknameField(BabyProfileSetupViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,7 +199,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
         const SizedBox(height: 8),
         TextField(
           controller: _nicknameController,
-          onChanged: _viewModel.setNickname,
+          onChanged: viewModel.setNickname,
           maxLength: BabyProfileSetupViewModel.nicknameMaxLength,
           style: AppTextStyles.body.regular.copyWith(
             color: AppColors.textPrimary,
@@ -265,8 +255,8 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     );
   }
 
-  Widget _buildSubmitButton() {
-    final isEnabled = _viewModel.isValid;
+  Widget _buildSubmitButton(BabyProfileSetupViewModel viewModel) {
+    final isEnabled = viewModel.isValid;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -302,7 +292,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
               ],
             ),
             child: Center(
-              child: _viewModel.isLoading
+              child: viewModel.isLoading
                   ? const SizedBox(
                       width: 24,
                       height: 24,

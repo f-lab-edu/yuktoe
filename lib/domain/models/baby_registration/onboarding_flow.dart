@@ -7,13 +7,13 @@ sealed class OnboardingFlow {
 class CreateBabyFlow extends OnboardingFlow {
   final String name;
   final Gender gender;
-  final DateTime? birthDate;
+  final DateTime birthDate;
   final DateTime? dueDate;
 
   const CreateBabyFlow({
     required this.name,
     required this.gender,
-    this.birthDate,
+    required this.birthDate,
     this.dueDate,
   });
 }

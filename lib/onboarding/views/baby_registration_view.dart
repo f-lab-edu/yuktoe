@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
@@ -8,24 +9,13 @@ import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/onboarding/view_models/baby_registration_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
 
-class BabyRegistrationView extends StatefulWidget {
+class BabyRegistrationView extends StatelessWidget {
   const BabyRegistrationView({super.key});
 
   @override
-  State<BabyRegistrationView> createState() => _BabyRegistrationViewState();
-}
-
-class _BabyRegistrationViewState extends State<BabyRegistrationView> {
-  final _viewModel = BabyRegistrationViewModel();
-
-  @override
-  void dispose() {
-    _viewModel.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<BabyRegistrationViewModel>();
+
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
       appBar: AppBar(
@@ -47,74 +37,79 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
           child: Container(height: 1, color: AppColors.borderPrimary),
         ),
       ),
-      body: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildNameField(),
-                      const SizedBox(height: 24),
-                      _buildGenderField(),
-                      const SizedBox(height: 24),
-                      _buildDateField(
-                        label: '생년월일',
-                        isRequired: true,
-                        value: _viewModel.birthDate,
-                        onSelect: _viewModel.setBirthDate,
-                      ),
-                      const SizedBox(height: 24),
-                      _buildDateField(
-                        label: '출산 예정일',
-                        isRequired: false,
-                        value: _viewModel.dueDate,
-                        onSelect: _viewModel.setDueDate,
-                      ),
-                      const SizedBox(height: 32),
-                      _buildTermsCheckbox(),
-                    ],
-                  ),
-                ),
-              ),
-              _buildSubmitButton(),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text, {bool isRequired = false}) {
-    return RichText(
-      text: TextSpan(
-        style: AppTextStyles.label.semibold.copyWith(
-          color: AppColors.gray.t700,
-        ),
+      body: Column(
         children: [
-          TextSpan(text: '$text '),
-          if (isRequired)
-            const TextSpan(
-              text: '*',
-              style: TextStyle(color: AppColors.error),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _NameField(
+                    onChanged: viewModel.setName,
+                  ),
+                  const SizedBox(height: 24),
+                  _GenderField(
+                    selectedGender: viewModel.gender,
+                    onSelect: viewModel.setGender,
+                  ),
+                  const SizedBox(height: 24),
+                  _DateField(
+                    label: '생년월일',
+                    isRequired: true,
+                    value: viewModel.birthDate,
+                    onSelect: viewModel.setBirthDate,
+                  ),
+                  const SizedBox(height: 24),
+                  _DateField(
+                    label: '출산 예정일',
+                    isRequired: false,
+                    value: viewModel.dueDate,
+                    onSelect: viewModel.setDueDate,
+                  ),
+                  const SizedBox(height: 32),
+                  _TermsCheckbox(
+                    value: viewModel.agreedToTerms,
+                    onToggle: viewModel.toggleAgreedToTerms,
+                  ),
+                ],
+              ),
             ),
+          ),
+          _SubmitButton(
+            isEnabled: viewModel.isValid,
+            onPressed: () {
+              context.push(
+                AppRoutes.babyProfileSetup,
+                extra: CreateBabyFlow(
+                  name: viewModel.name,
+                  gender: viewModel.gender!,
+                  birthDate: viewModel.birthDate!,
+                  dueDate: viewModel.dueDate,
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildNameField() {
+class _NameField extends StatelessWidget {
+  final ValueChanged<String> onChanged;
+
+  const _NameField({required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLabel('이름', isRequired: true),
         const SizedBox(height: 8),
         TextField(
-          onChanged: _viewModel.setName,
+          onChanged: onChanged,
           style: AppTextStyles.body.regular.copyWith(
             color: AppColors.textPrimary,
           ),
@@ -146,8 +141,16 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
       ],
     );
   }
+}
 
-  Widget _buildGenderField() {
+class _GenderField extends StatelessWidget {
+  final Gender? selectedGender;
+  final ValueChanged<Gender> onSelect;
+
+  const _GenderField({required this.selectedGender, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -158,16 +161,16 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
             Expanded(
               child: _GenderButton(
                 label: '남자 아기',
-                isSelected: _viewModel.gender == Gender.male,
-                onTap: () => _viewModel.setGender(Gender.male),
+                isSelected: selectedGender == Gender.male,
+                onTap: () => onSelect(Gender.male),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _GenderButton(
                 label: '여자 아기',
-                isSelected: _viewModel.gender == Gender.female,
-                onTap: () => _viewModel.setGender(Gender.female),
+                isSelected: selectedGender == Gender.female,
+                onTap: () => onSelect(Gender.female),
               ),
             ),
           ],
@@ -175,15 +178,25 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
       ],
     );
   }
+}
 
-  Widget _buildDateField({
-    required String label,
-    required bool isRequired,
-    required DateTime? value,
-    required ValueChanged<DateTime> onSelect,
-  }) {
+class _DateField extends StatelessWidget {
+  final String label;
+  final bool isRequired;
+  final DateTime? value;
+  final ValueChanged<DateTime> onSelect;
+
+  const _DateField({
+    required this.label,
+    required this.isRequired,
+    required this.value,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final formattedDate = value != null
-        ? '${value.year}.${value.month.toString().padLeft(2, '0')}.${value.day.toString().padLeft(2, '0')}'
+        ? '${value!.year}.${value!.month.toString().padLeft(2, '0')}.${value!.day.toString().padLeft(2, '0')}'
         : '';
 
     return Column(
@@ -192,11 +205,7 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
         _buildLabel(label, isRequired: isRequired),
         const SizedBox(height: 8),
         GestureDetector(
-          onTap: () => _showDatePicker(
-            context: context,
-            currentValue: value,
-            onSelect: onSelect,
-          ),
+          onTap: () => _showDatePicker(context),
           child: Container(
             width: double.infinity,
             height: 52,
@@ -231,13 +240,9 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
     );
   }
 
-  void _showDatePicker({
-    required BuildContext context,
-    required DateTime? currentValue,
-    required ValueChanged<DateTime> onSelect,
-  }) {
+  void _showDatePicker(BuildContext context) {
     final now = DateTime.now();
-    final initialDate = currentValue ?? now;
+    final initialDate = value ?? now;
     final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
 
     if (isIOS) {
@@ -256,13 +261,13 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
                   children: [
                     CupertinoButton(
                       child: const Text('취소'),
-                      onPressed: () => context.pop(),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                     CupertinoButton(
                       child: const Text('완료'),
                       onPressed: () {
                         onSelect(selectedDate);
-                        context.pop();
+                        Navigator.of(context).pop();
                       },
                     ),
                   ],
@@ -292,10 +297,18 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
       });
     }
   }
+}
 
-  Widget _buildTermsCheckbox() {
+class _TermsCheckbox extends StatelessWidget {
+  final bool value;
+  final VoidCallback onToggle;
+
+  const _TermsCheckbox({required this.value, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _viewModel.toggleAgreedToTerms,
+      onTap: onToggle,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -303,8 +316,8 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
             width: 20,
             height: 20,
             child: Checkbox(
-              value: _viewModel.agreedToTerms,
-              onChanged: (_) => _viewModel.toggleAgreedToTerms(),
+              value: value,
+              onChanged: (_) => onToggle(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
@@ -351,26 +364,20 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
       ),
     );
   }
+}
 
-  Widget _buildSubmitButton() {
-    final isEnabled = _viewModel.isValid;
+class _SubmitButton extends StatelessWidget {
+  final bool isEnabled;
+  final VoidCallback onPressed;
 
+  const _SubmitButton({required this.isEnabled, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
       child: GestureDetector(
-        onTap: isEnabled
-            ? () {
-                context.push(
-                  AppRoutes.babyProfileSetup,
-                  extra: CreateBabyFlow(
-                    name: _viewModel.name,
-                    gender: _viewModel.gender!,
-                    birthDate: _viewModel.birthDate!,
-                    dueDate: _viewModel.dueDate,
-                  ),
-                );
-              }
-            : null,
+        onTap: isEnabled ? onPressed : null,
         child: AnimatedOpacity(
           opacity: isEnabled ? 1.0 : 0.5,
           duration: const Duration(milliseconds: 200),
@@ -408,6 +415,24 @@ class _BabyRegistrationViewState extends State<BabyRegistrationView> {
       ),
     );
   }
+}
+
+Widget _buildLabel(String text, {bool isRequired = false}) {
+  return RichText(
+    text: TextSpan(
+      style: AppTextStyles.label.semibold.copyWith(
+        color: AppColors.gray.t700,
+      ),
+      children: [
+        TextSpan(text: '$text '),
+        if (isRequired)
+          const TextSpan(
+            text: '*',
+            style: TextStyle(color: AppColors.error),
+          ),
+      ],
+    ),
+  );
 }
 
 class _GenderButton extends StatelessWidget {

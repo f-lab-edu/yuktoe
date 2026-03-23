@@ -1,16 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
-
-enum Relationship {
-  mom('mom'),
-  dad('dad'),
-  family('family'),
-  other('other');
-
-  const Relationship(this.serverValue);
-  final String serverValue;
-}
 
 class BabyProfileSetupViewModel extends ChangeNotifier {
   static const nicknameMaxLength = 20;
@@ -63,8 +54,7 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
         ) =>
           await _repository.createBaby(
             name: name,
-            // TODO: 강제언래핑 수정 필요
-            birthDate: _formatDate(birthDate!),
+            birthDate: _formatDate(birthDate),
             dueDate: dueDate != null ? _formatDate(dueDate) : null,
             gender: gender.serverValue,
             relationship: _relationship!.serverValue,

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
-import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/onboarding/view_models/invite_code_view_model.dart';
@@ -18,10 +17,6 @@ class InviteCodeView extends StatefulWidget {
 }
 
 class _InviteCodeViewState extends State<InviteCodeView> {
-  final _viewModel = InviteCodeViewModel();
-  late final BabyRegistrationRepository _repository = context
-      .read<BabyRegistrationRepository>();
-
   static const _iconGradientStart = Color(0xFFF6339A);
   static const _iconGradientEnd = Color(0xFFEC003F);
   static const _buttonGradientStart = Color(0xFFF6339A);
@@ -32,26 +27,12 @@ class _InviteCodeViewState extends State<InviteCodeView> {
   static const _cardGradientStart = Color(0xFF2B7FFF);
   static const _cardGradientEnd = Color(0xFF4F39F6);
 
-  @override
-  void dispose() {
-    _viewModel.dispose();
-    super.dispose();
-  }
+  void _onViewModelChanged() {
+    final viewModel = context.read<InviteCodeViewModel>();
 
-  Future<void> _onSubmit() async {
-    try {
-      final baby = await _repository.verifyInviteCode(_viewModel.code);
-
-      if (!mounted) return;
-
-      if (baby == null) {
-        _showNotFoundAlert();
-        return;
-      }
-
-      _showBabyConfirmModal(baby);
-    } catch (_) {
-      if (!mounted) return;
+    if (viewModel.verifiedBaby != null) {
+      _showBabyConfirmModal(viewModel.verifiedBaby!);
+    } else if (viewModel.error != null) {
       _showNotFoundAlert();
     }
   }
@@ -131,7 +112,6 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               ),
             ),
             const SizedBox(height: 24),
-            // Baby info card
             Container(
               width: double.infinity,
               clipBehavior: Clip.antiAlias,
@@ -141,7 +121,6 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               ),
               child: Column(
                 children: [
-                  // Header
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -186,7 +165,6 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                       ],
                     ),
                   ),
-                  // Body
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Row(
@@ -232,12 +210,14 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               ),
             ),
             const SizedBox(height: 24),
-            // Buttons
             Row(
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.of(sheetContext).pop(),
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      context.read<InviteCodeViewModel>().clearVerifiedBaby();
+                    },
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
@@ -259,10 +239,12 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
+                      final code =
+                          context.read<InviteCodeViewModel>().code;
                       Navigator.of(sheetContext).pop();
                       context.push(
                         AppRoutes.babyProfileSetup,
-                        extra: JoinBabyFlow(inviteCode: _viewModel.code),
+                        extra: JoinBabyFlow(inviteCode: code),
                       );
                     },
                     child: Container(
@@ -292,8 +274,17 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
+  Future<void> _onSubmit() async {
+    final viewModel = context.read<InviteCodeViewModel>();
+    await viewModel.verifyInviteCode();
+    if (!mounted) return;
+    _onViewModelChanged();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<InviteCodeViewModel>();
+
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
       appBar: AppBar(
@@ -315,34 +306,29 @@ class _InviteCodeViewState extends State<InviteCodeView> {
           child: Container(height: 1, color: AppColors.borderPrimary),
         ),
       ),
-      body: ListenableBuilder(
-        listenable: _viewModel,
-        builder: (context, _) {
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 48),
-                      _buildIcon(),
-                      const SizedBox(height: 32),
-                      _buildDescription(),
-                      const SizedBox(height: 32),
-                      _buildCodeField(),
-                      const SizedBox(height: 24),
-                      _buildInfoBox(),
-                      const SizedBox(height: 24),
-                      _buildTermsCheckbox(),
-                    ],
-                  ),
-                ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 48),
+                  _buildIcon(),
+                  const SizedBox(height: 32),
+                  _buildDescription(),
+                  const SizedBox(height: 32),
+                  _buildCodeField(viewModel),
+                  const SizedBox(height: 24),
+                  _buildInfoBox(),
+                  const SizedBox(height: 24),
+                  _buildTermsCheckbox(viewModel),
+                ],
               ),
-              _buildSubmitButton(),
-            ],
-          );
-        },
+            ),
+          ),
+          _buildSubmitButton(viewModel),
+        ],
       ),
     );
   }
@@ -398,7 +384,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
-  Widget _buildCodeField() {
+  Widget _buildCodeField(InviteCodeViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -418,7 +404,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
         ),
         const SizedBox(height: 8),
         TextField(
-          onChanged: _viewModel.setCode,
+          onChanged: viewModel.setCode,
           textAlign: TextAlign.left,
           style: const TextStyle(
             fontSize: 18,
@@ -520,9 +506,9 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
-  Widget _buildTermsCheckbox() {
+  Widget _buildTermsCheckbox(InviteCodeViewModel viewModel) {
     return GestureDetector(
-      onTap: _viewModel.toggleAgreedToTerms,
+      onTap: viewModel.toggleAgreedToTerms,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -530,8 +516,8 @@ class _InviteCodeViewState extends State<InviteCodeView> {
             width: 20,
             height: 20,
             child: Checkbox(
-              value: _viewModel.agreedToTerms,
-              onChanged: (_) => _viewModel.toggleAgreedToTerms(),
+              value: viewModel.agreedToTerms,
+              onChanged: (_) => viewModel.toggleAgreedToTerms(),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
@@ -579,8 +565,8 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
-  Widget _buildSubmitButton() {
-    final isEnabled = _viewModel.isValid;
+  Widget _buildSubmitButton(InviteCodeViewModel viewModel) {
+    final isEnabled = viewModel.isValid;
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -611,12 +597,21 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               ],
             ),
             child: Center(
-              child: Text(
-                '다음으로',
-                style: AppTextStyles.body.bold.copyWith(
-                  color: AppColors.textOnDark,
-                ),
-              ),
+              child: viewModel.isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: AppColors.textOnDark,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Text(
+                      '다음으로',
+                      style: AppTextStyles.body.bold.copyWith(
+                        color: AppColors.textOnDark,
+                      ),
+                    ),
             ),
           ),
         ),
