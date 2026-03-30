@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/onboarding/view_models/baby_registration_view_model.dart';
@@ -26,7 +27,7 @@ class BabyRegistrationView extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '우리 아기 등록',
+          AppStrings.babyRegistrationAppBar,
           style: AppTextStyles.title.bold.copyWith(
             color: AppColors.textPrimary,
           ),
@@ -55,14 +56,14 @@ class BabyRegistrationView extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   _DateField(
-                    label: '생년월일',
+                    label: AppStrings.birthDate,
                     isRequired: true,
                     value: viewModel.birthDate,
                     onSelect: viewModel.setBirthDate,
                   ),
                   const SizedBox(height: 24),
                   _DateField(
-                    label: '출산 예정일',
+                    label: AppStrings.dueDateLabel,
                     isRequired: false,
                     value: viewModel.dueDate,
                     onSelect: viewModel.setDueDate,
@@ -106,7 +107,7 @@ class _NameField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('이름', isRequired: true),
+        _buildLabel(AppStrings.nameLabel, isRequired: true),
         const SizedBox(height: 8),
         TextField(
           onChanged: onChanged,
@@ -114,7 +115,7 @@ class _NameField extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
-            hintText: '아기 이름을 입력하세요',
+            hintText: AppStrings.nameHint,
             hintStyle: AppTextStyles.body.regular.copyWith(
               color: AppColors.textPrimary.withValues(alpha: 0.5),
             ),
@@ -154,13 +155,13 @@ class _GenderField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('성별', isRequired: true),
+        _buildLabel(AppStrings.genderLabel, isRequired: true),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
               child: _GenderButton(
-                label: '남자 아기',
+                label: AppStrings.maleLabel,
                 isSelected: selectedGender == Gender.male,
                 onTap: () => onSelect(Gender.male),
               ),
@@ -168,7 +169,7 @@ class _GenderField extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _GenderButton(
-                label: '여자 아기',
+                label: AppStrings.femaleLabel,
                 isSelected: selectedGender == Gender.female,
                 onTap: () => onSelect(Gender.female),
               ),
@@ -260,11 +261,11 @@ class _DateField extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CupertinoButton(
-                      child: const Text('취소'),
+                      child: const Text(AppStrings.cancel),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     CupertinoButton(
-                      child: const Text('완료'),
+                      child: const Text(AppStrings.done),
                       onPressed: () {
                         onSelect(selectedDate);
                         Navigator.of(context).pop();
@@ -333,7 +334,7 @@ class _TermsCheckbox extends StatelessWidget {
                 style: AppTextStyles.label.medium,
                 children: [
                   TextSpan(
-                    text: '서비스 이용약관',
+                    text: AppStrings.termsOfService,
                     style: AppTextStyles.label.semibold.copyWith(
                       color: AppColors.brandPrimary,
                     ),
@@ -343,17 +344,17 @@ class _TermsCheckbox extends StatelessWidget {
                     style: TextStyle(color: Color(0xFF364153)),
                   ),
                   TextSpan(
-                    text: '개인정보 처리방침',
+                    text: AppStrings.privacyPolicy,
                     style: AppTextStyles.label.semibold.copyWith(
                       color: AppColors.brandPrimary,
                     ),
                   ),
                   const TextSpan(
-                    text: '에 동의합니다 ',
+                    text: AppStrings.termsAgreeSuffix,
                     style: TextStyle(color: Color(0xFF364153)),
                   ),
                   const TextSpan(
-                    text: '*',
+                    text: AppStrings.requiredMark,
                     style: TextStyle(color: AppColors.error),
                   ),
                 ],
@@ -404,7 +405,7 @@ class _SubmitButton extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                '다음으로',
+                AppStrings.next,
                 style: AppTextStyles.body.bold.copyWith(
                   color: AppColors.textOnDark,
                 ),

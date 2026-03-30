@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/onboarding/view_models/baby_profile_setup_view_model.dart';
 
@@ -23,10 +24,10 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
   static const _buttonGradientEnd = Color(0xFF9810FA);
 
   static const _relationshipOptions = [
-    (Relationship.mom, '👩', '엄마'),
-    (Relationship.dad, '👨', '아빠'),
-    (Relationship.family, '👨\u200D👩\u200D👧', '가족'),
-    (Relationship.other, '👤', '기타'),
+    (Relationship.mom, '👩', AppStrings.relationshipMom),
+    (Relationship.dad, '👨', AppStrings.relationshipDad),
+    (Relationship.family, '👨\u200D👩\u200D👧', AppStrings.relationshipFamily),
+    (Relationship.other, '👤', AppStrings.relationshipOther),
   ];
 
   @override
@@ -45,7 +46,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.error ?? '오류가 발생했습니다.'),
+          content: Text(viewModel.error ?? AppStrings.genericError),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -145,14 +146,14 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
           ),
           const SizedBox(height: 24),
           Text(
-            '거의 다 왔어요!',
+            AppStrings.profileSetupHeading,
             style: AppTextStyles.heading1.bold.copyWith(
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            '마지막으로 정보를 입력해주세요',
+            AppStrings.profileSetupSubheading,
             style: AppTextStyles.body.regular.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -166,7 +167,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('아기와의 관계', isRequired: true),
+        _buildLabel(AppStrings.relationshipLabel, isRequired: true),
         const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
@@ -195,7 +196,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('닉네임', isRequired: true),
+        _buildLabel(AppStrings.nicknameLabel, isRequired: true),
         const SizedBox(height: 8),
         TextField(
           controller: _nicknameController,
@@ -205,11 +206,11 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
             color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
-            hintText: '예: 리암엄마',
+            hintText: AppStrings.nicknameHint,
             hintStyle: AppTextStyles.body.regular.copyWith(
               color: AppColors.textPrimary.withValues(alpha: 0.5),
             ),
-            helperText: '다른 가족 구성원에게 표시될 이름이에요',
+            helperText: AppStrings.nicknameHelper,
             helperStyle: AppTextStyles.caption.regular.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -302,7 +303,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
                       ),
                     )
                   : Text(
-                      '시작하기',
+                      AppStrings.start,
                       style: AppTextStyles.body.bold.copyWith(
                         color: AppColors.textOnDark,
                       ),

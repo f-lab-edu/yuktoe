@@ -2,16 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/common/views/logo.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/gen/assets.gen.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
-
-  static const _appTitle = '내꿈은육퇴';
-  static const _appSubtitle = '우리 아기 성장 기록';
-  static const _kakaoLoginText = '카카오로 시작하기';
-  static const _googleLoginText = 'Google로 시작하기';
-  static const _appleLoginText = 'Apple로 시작하기';
 
   static const _horizontalPadding = 32.0;
   static const _topSpacing = 48.0;
@@ -44,14 +39,14 @@ class LoginView extends StatelessWidget {
                   Logo(),
                   const SizedBox(height: _logoTitleSpacing),
                   Text(
-                    _appTitle,
+                    AppStrings.appTitle,
                     style: AppTextStyles.display.bold.copyWith(
                       color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: _titleSubtitleSpacing),
                   Text(
-                    _appSubtitle,
+                    AppStrings.appSubtitle,
                     style: AppTextStyles.body.regular.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -61,7 +56,7 @@ class LoginView extends StatelessWidget {
                     onPressed: () {},
                     backgroundColor: AppColors.kakaoBackground,
                     icon: Assets.icons.kakao.svg(width: 24),
-                    label: _kakaoLoginText,
+                    label: AppStrings.kakaoLogin,
                     textColor: AppColors.textPrimary,
                   ),
                   const SizedBox(height: _buttonSpacing),
@@ -69,7 +64,7 @@ class LoginView extends StatelessWidget {
                     onPressed: () {},
                     backgroundColor: AppColors.backgroundPrimary,
                     icon: Assets.icons.google.svg(width: 24),
-                    label: _googleLoginText,
+                    label: AppStrings.googleLogin,
                     textColor: AppColors.textPrimary,
                   ),
                   const SizedBox(height: _buttonSpacing),
@@ -77,7 +72,7 @@ class LoginView extends StatelessWidget {
                     onPressed: () {},
                     backgroundColor: AppColors.black,
                     icon: Assets.icons.apple.svg(width: 24),
-                    label: _appleLoginText,
+                    label: AppStrings.appleLogin,
                     textColor: AppColors.textOnDark,
                   ),
                 ],

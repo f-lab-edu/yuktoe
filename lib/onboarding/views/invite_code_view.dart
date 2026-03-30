@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
@@ -43,13 +44,13 @@ class _InviteCodeViewState extends State<InviteCodeView> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          '아기를 찾을 수 없어요',
+          AppStrings.babyNotFoundTitle,
           style: AppTextStyles.title.bold.copyWith(
             color: AppColors.textPrimary,
           ),
         ),
         content: Text(
-          '입력한 초대 코드와 일치하는 아기가 없습니다.\n코드를 다시 확인해주세요.',
+          AppStrings.babyNotFoundBody,
           style: AppTextStyles.label.regular.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -58,7 +59,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              '확인',
+              AppStrings.confirm,
               style: AppTextStyles.label.semibold.copyWith(
                 color: AppColors.brandPrimary,
               ),
@@ -70,7 +71,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
   }
 
   void _showBabyConfirmModal(BabySummary baby) {
-    final genderText = baby.gender == Gender.male ? '남자 아기' : '여자 아기';
+    final genderText = baby.gender == Gender.male ? AppStrings.maleLabel : AppStrings.femaleLabel;
     final birthDate = baby.birthDate ?? baby.dueDate;
     if (birthDate == null) return;
 
@@ -106,7 +107,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
             ),
             const SizedBox(height: 24),
             Text(
-              '이 아기가 맞나요?',
+              AppStrings.babyConfirmTitle,
               style: AppTextStyles.heading3.bold.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -189,7 +190,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '생년월일',
+                              AppStrings.birthDate,
                               style: AppTextStyles.caption.semibold.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -226,7 +227,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                       ),
                       child: Center(
                         child: Text(
-                          '아니요',
+                          AppStrings.no,
                           style: AppTextStyles.body.semibold.copyWith(
                             color: AppColors.gray.t700,
                           ),
@@ -257,7 +258,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                       ),
                       child: Center(
                         child: Text(
-                          '맞아요',
+                          AppStrings.yes,
                           style: AppTextStyles.body.semibold.copyWith(
                             color: AppColors.textOnDark,
                           ),
@@ -295,7 +296,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '초대 코드 입력',
+          AppStrings.inviteCodeAppBar,
           style: AppTextStyles.title.bold.copyWith(
             color: AppColors.textPrimary,
           ),
@@ -367,14 +368,14 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     return Column(
       children: [
         Text(
-          '가족 초대 코드를 입력하세요',
+          AppStrings.inviteCodeHeading,
           style: AppTextStyles.heading3.bold.copyWith(
             color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          '가족 구성원으로부터 받은 초대 코드를 입력하면\n아기 정보를 함께 공유할 수 있어요',
+          AppStrings.inviteCodeSubheading,
           textAlign: TextAlign.center,
           style: AppTextStyles.label.regular.copyWith(
             color: AppColors.textSecondary,
@@ -394,7 +395,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               color: AppColors.gray.t700,
             ),
             children: const [
-              TextSpan(text: '초대 코드 '),
+              TextSpan(text: AppStrings.inviteCodeFieldLabel),
               TextSpan(
                 text: '*',
                 style: TextStyle(color: AppColors.error),
@@ -413,7 +414,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
             letterSpacing: 0.9,
           ),
           decoration: InputDecoration(
-            hintText: '예: ABC-123-XYZ',
+            hintText: AppStrings.inviteCodeHint,
             hintStyle: TextStyle(
               fontSize: 18,
               fontFamily: 'Menlo',
@@ -441,7 +442,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
         const SizedBox(height: 8),
         Center(
           child: Text(
-            '대시(-)를 포함하여 입력하세요',
+            AppStrings.inviteCodeHelp,
             style: AppTextStyles.caption.regular.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -486,14 +487,14 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '초대 코드는 어디서 받나요?',
+                  AppStrings.inviteCodeInfoTitle,
                   style: AppTextStyles.label.semibold.copyWith(
                     color: _infoTitleColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '이미 등록된 가족 구성원의 설정 메뉴에서\n\'가족 초대하기\'를 통해 코드를 받을 수 있습니다.',
+                  AppStrings.inviteCodeInfoBody,
                   style: AppTextStyles.caption.regular.copyWith(
                     color: _infoBodyColor,
                   ),
@@ -533,7 +534,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                 style: AppTextStyles.label.medium,
                 children: [
                   TextSpan(
-                    text: '서비스 이용약관',
+                    text: AppStrings.termsOfService,
                     style: AppTextStyles.label.semibold.copyWith(
                       color: _termsLinkColor,
                     ),
@@ -543,17 +544,17 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                     style: TextStyle(color: Color(0xFF364153)),
                   ),
                   TextSpan(
-                    text: '개인정보 처리방침',
+                    text: AppStrings.privacyPolicy,
                     style: AppTextStyles.label.semibold.copyWith(
                       color: _termsLinkColor,
                     ),
                   ),
                   const TextSpan(
-                    text: '에 동의합니다 ',
+                    text: AppStrings.termsAgreeSuffix,
                     style: TextStyle(color: Color(0xFF364153)),
                   ),
                   const TextSpan(
-                    text: '*',
+                    text: AppStrings.requiredMark,
                     style: TextStyle(color: AppColors.error),
                   ),
                 ],
@@ -607,7 +608,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                       ),
                     )
                   : Text(
-                      '다음으로',
+                      AppStrings.next,
                       style: AppTextStyles.body.bold.copyWith(
                         color: AppColors.textOnDark,
                       ),

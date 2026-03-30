@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/routing/router.dart';
 
 class WelcomeView extends StatelessWidget {
   const WelcomeView({super.key});
-
-  static const _title = '환영합니다!';
-  static const _subtitle = '시작 방법을 선택해주세요';
-  static const _footerText = '가족 구성원과 함께 아기의 성장을 기록하고 공유하세요';
 
   static const _horizontalPadding = 16.0;
   static const _titleSubtitleSpacing = 12.0;
@@ -40,14 +37,14 @@ class WelcomeView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _title,
+                    AppStrings.welcomeTitle,
                     style: AppTextStyles.heading1.bold.copyWith(
                       color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: _titleSubtitleSpacing),
                   Text(
-                    _subtitle,
+                    AppStrings.welcomeSubtitle,
                     style: AppTextStyles.body.regular.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -60,8 +57,8 @@ class WelcomeView extends StatelessWidget {
                       end: Alignment.bottomRight,
                       colors: [Color(0xFF2B7FFF), Color(0xFF4F39F6)],
                     ),
-                    title: '우리 아기 등록하기',
-                    description: '새로운 아기의 정보를 등록합니다',
+                    title: AppStrings.registerBabyTitle,
+                    description: AppStrings.registerBabyDescription,
                     onTap: () => context.push(AppRoutes.babyRegistration),
                   ),
                   const SizedBox(height: _cardSpacing),
@@ -72,13 +69,13 @@ class WelcomeView extends StatelessWidget {
                       end: Alignment.bottomRight,
                       colors: [Color(0xFFF6339A), Color(0xFFEC003F)],
                     ),
-                    title: '초대 코드가 있어요',
-                    description: '가족 초대 코드로 참여합니다',
+                    title: AppStrings.inviteCodeTitle,
+                    description: AppStrings.inviteCodeDescription,
                     onTap: () => context.push(AppRoutes.inviteCode),
                   ),
                   const SizedBox(height: _footerTopSpacing),
                   Text(
-                    _footerText,
+                    AppStrings.welcomeFooter,
                     style: AppTextStyles.caption.regular.copyWith(
                       color: AppColors.textSecondary,
                     ),
