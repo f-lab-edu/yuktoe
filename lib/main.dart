@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/core/config/app_env.dart';
-import 'package:yuktoe/login/views/login_view.dart';
+import 'package:yuktoe/core/config/dependencies.dart';
+import 'package:yuktoe/presentation/auth/login/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +17,8 @@ Future<void> main() async {
     anonKey: AppEnv.supabaseAnonKey,
   );
 
+  KakaoSdk.init(nativeAppKey: AppEnv.kakaoNativeAppKey);
+
   runApp(const MyApp());
 }
 
@@ -22,13 +27,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '내꿈은육퇴',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2B7FFF)),
+    return MultiProvider(
+      providers: buildDependencies(),
+      child: MaterialApp(
+        title: 'Yuktoe',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        ),
+        home: const LoginScreen(),
       ),
-      home: const LoginView(),
     );
   }
 }
