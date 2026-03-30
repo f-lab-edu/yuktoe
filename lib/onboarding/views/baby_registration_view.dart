@@ -341,7 +341,7 @@ class _TermsCheckbox extends StatelessWidget {
                   ),
                   const TextSpan(
                     text: ', ',
-                    style: TextStyle(color: Color(0xFF364153)),
+                    style: TextStyle(color: AppColors.textTertiary),
                   ),
                   TextSpan(
                     text: AppStrings.privacyPolicy,
@@ -351,7 +351,7 @@ class _TermsCheckbox extends StatelessWidget {
                   ),
                   const TextSpan(
                     text: AppStrings.termsAgreeSuffix,
-                    style: TextStyle(color: Color(0xFF364153)),
+                    style: TextStyle(color: AppColors.textTertiary),
                   ),
                   const TextSpan(
                     text: AppStrings.requiredMark,
@@ -387,8 +387,8 @@ class _SubmitButton extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2B7FFF), Color(0xFF4F39F6)],
+              gradient: LinearGradient(
+                colors: [AppColors.brandAccent, AppColors.violet.t500],
               ),
               boxShadow: [
                 BoxShadow(

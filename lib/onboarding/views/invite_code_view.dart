@@ -18,16 +18,6 @@ class InviteCodeView extends StatefulWidget {
 }
 
 class _InviteCodeViewState extends State<InviteCodeView> {
-  static const _iconGradientStart = Color(0xFFF6339A);
-  static const _iconGradientEnd = Color(0xFFEC003F);
-  static const _buttonGradientStart = Color(0xFFF6339A);
-  static const _buttonGradientEnd = Color(0xFFEC003F);
-  static const _infoTitleColor = Color(0xFF1C398E);
-  static const _infoBodyColor = Color(0xFF1447E6);
-  static const _termsLinkColor = Color(0xFFE60076);
-  static const _cardGradientStart = Color(0xFF2B7FFF);
-  static const _cardGradientEnd = Color(0xFF4F39F6);
-
   void _onViewModelChanged() {
     final viewModel = context.read<InviteCodeViewModel>();
 
@@ -125,9 +115,9 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [_cardGradientStart, _cardGradientEnd],
+                        colors: [AppColors.brandAccent, AppColors.violet.t500],
                       ),
                     ),
                     child: Column(
@@ -251,8 +241,8 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_cardGradientStart, _cardGradientEnd],
+                        gradient: LinearGradient(
+                          colors: [AppColors.brandAccent, AppColors.violet.t500],
                         ),
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -340,10 +330,10 @@ class _InviteCodeViewState extends State<InviteCodeView> {
       height: 80,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [_iconGradientStart, _iconGradientEnd],
+          colors: [AppColors.pink.t400, AppColors.pink.t600],
         ),
         boxShadow: [
           BoxShadow(
@@ -468,7 +458,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
             width: 20,
             height: 20,
             decoration: const BoxDecoration(
-              color: Color(0xFF2B7FFF),
+              color: AppColors.brandAccent,
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -489,14 +479,14 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                 Text(
                   AppStrings.inviteCodeInfoTitle,
                   style: AppTextStyles.label.semibold.copyWith(
-                    color: _infoTitleColor,
+                    color: AppColors.infoTitle,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   AppStrings.inviteCodeInfoBody,
                   style: AppTextStyles.caption.regular.copyWith(
-                    color: _infoBodyColor,
+                    color: AppColors.infoBody,
                   ),
                 ),
               ],
@@ -524,7 +514,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
-              activeColor: _termsLinkColor,
+              activeColor: AppColors.pink.t500,
             ),
           ),
           const SizedBox(width: 12),
@@ -536,22 +526,22 @@ class _InviteCodeViewState extends State<InviteCodeView> {
                   TextSpan(
                     text: AppStrings.termsOfService,
                     style: AppTextStyles.label.semibold.copyWith(
-                      color: _termsLinkColor,
+                      color: AppColors.pink.t500,
                     ),
                   ),
                   const TextSpan(
                     text: ', ',
-                    style: TextStyle(color: Color(0xFF364153)),
+                    style: TextStyle(color: AppColors.textTertiary),
                   ),
                   TextSpan(
                     text: AppStrings.privacyPolicy,
                     style: AppTextStyles.label.semibold.copyWith(
-                      color: _termsLinkColor,
+                      color: AppColors.pink.t500,
                     ),
                   ),
                   const TextSpan(
                     text: AppStrings.termsAgreeSuffix,
-                    style: TextStyle(color: Color(0xFF364153)),
+                    style: TextStyle(color: AppColors.textTertiary),
                   ),
                   const TextSpan(
                     text: AppStrings.requiredMark,
@@ -581,8 +571,8 @@ class _InviteCodeViewState extends State<InviteCodeView> {
             height: 56,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: const LinearGradient(
-                colors: [_buttonGradientStart, _buttonGradientEnd],
+              gradient: LinearGradient(
+                colors: [AppColors.pink.t400, AppColors.pink.t600],
               ),
               boxShadow: [
                 BoxShadow(

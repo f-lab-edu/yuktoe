@@ -52,10 +52,10 @@ class WelcomeView extends StatelessWidget {
                   const SizedBox(height: _headerContentSpacing),
                   _OptionCard(
                     icon: Icons.person_add_outlined,
-                    iconGradient: const LinearGradient(
+                    iconGradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF2B7FFF), Color(0xFF4F39F6)],
+                      colors: [AppColors.brandAccent, AppColors.violet.t500],
                     ),
                     title: AppStrings.registerBabyTitle,
                     description: AppStrings.registerBabyDescription,
@@ -64,10 +64,10 @@ class WelcomeView extends StatelessWidget {
                   const SizedBox(height: _cardSpacing),
                   _OptionCard(
                     icon: Icons.key_outlined,
-                    iconGradient: const LinearGradient(
+                    iconGradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFF6339A), Color(0xFFEC003F)],
+                      colors: [AppColors.pink.t400, AppColors.pink.t600],
                     ),
                     title: AppStrings.inviteCodeTitle,
                     description: AppStrings.inviteCodeDescription,

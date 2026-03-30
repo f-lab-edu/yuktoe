@@ -17,12 +17,6 @@ class BabyProfileSetupView extends StatefulWidget {
 class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
   final _nicknameController = TextEditingController();
 
-  static const _backgroundGradientTop = Color(0xFFEEF2FF);
-  static const _iconGradientStart = Color(0xFF615FFF);
-  static const _iconGradientEnd = Color(0xFF9810FA);
-  static const _buttonGradientStart = Color(0xFF615FFF);
-  static const _buttonGradientEnd = Color(0xFF9810FA);
-
   static const _relationshipOptions = [
     (Relationship.mom, '👩', AppStrings.relationshipMom),
     (Relationship.dad, '👨', AppStrings.relationshipDad),
@@ -97,7 +91,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_backgroundGradientTop, AppColors.backgroundPrimary],
+          colors: [AppColors.backgroundVioletLight, AppColors.backgroundPrimary],
         ),
       ),
       child: Column(
@@ -118,10 +112,10 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
             height: 80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [_iconGradientStart, _iconGradientEnd],
+                colors: [AppColors.violet.t400, AppColors.violet.t600],
               ),
               boxShadow: [
                 BoxShadow(
@@ -276,8 +270,8 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
             height: 56,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: const LinearGradient(
-                colors: [_buttonGradientStart, _buttonGradientEnd],
+              gradient: LinearGradient(
+                colors: [AppColors.violet.t400, AppColors.violet.t600],
               ),
               boxShadow: [
                 BoxShadow(
