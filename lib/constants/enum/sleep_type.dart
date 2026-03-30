@@ -1,0 +1,1 @@
+enum SleepType { nap, night }
