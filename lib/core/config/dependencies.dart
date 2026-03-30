@@ -4,8 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/core/config/app_env.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository_impl.dart';
+import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
+import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository_impl.dart';
 import 'package:yuktoe/data/services/auth_service/auth_service.dart';
 import 'package:yuktoe/data/services/auth_service/supabase_auth_service.dart';
+import 'package:yuktoe/data/services/baby_registration_service/baby_registration_service.dart';
+import 'package:yuktoe/data/services/baby_registration_service/supabase_baby_registration_service.dart';
 
 List<SingleChildWidget> buildDependencies() {
   return [
@@ -18,6 +22,16 @@ List<SingleChildWidget> buildDependencies() {
     ),
     Provider<AuthRepository>(
       create: (context) => AuthRepositoryImpl(context.read<AuthService>()),
+    ),
+    Provider<BabyRegistrationService>(
+      create: (context) => SupabaseBabyRegistrationService(
+        client: context.read<SupabaseClient>(),
+      ),
+    ),
+    Provider<BabyRegistrationRepository>(
+      create: (context) => BabyRegistrationRepositoryImpl(
+        context.read<BabyRegistrationService>(),
+      ),
     ),
   ];
 }
