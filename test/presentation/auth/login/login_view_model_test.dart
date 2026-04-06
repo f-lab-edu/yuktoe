@@ -9,7 +9,7 @@ import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/domain/models/auth/app_session.dart';
 import 'package:yuktoe/domain/models/auth/app_user.dart';
-import 'package:yuktoe/presentation/auth/login/vjew_models/login_view_model.dart';
+import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
 
 import 'login_view_model_test.mocks.dart';
 

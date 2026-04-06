@@ -1,7 +1,11 @@
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
+import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
+import 'package:yuktoe/presentation/auth/login/views/login_view.dart';
+import 'package:yuktoe/presentation/home/home_screen.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_registration_view_model.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
@@ -9,16 +13,18 @@ import 'package:yuktoe/presentation/onboarding/views/baby_profile_setup_view.dar
 import 'package:yuktoe/presentation/onboarding/views/baby_registration_view.dart';
 import 'package:yuktoe/presentation/onboarding/views/invite_code_view.dart';
 import 'package:yuktoe/presentation/onboarding/views/welcome_view.dart';
-import 'package:yuktoe/presentation/auth/login/views/login_screen.dart';
-import 'package:yuktoe/presentation/home/home_screen.dart';
 
 abstract class AppRoutes {
   static const login = '/login';
   static const welcome = '/welcome';
   static const home = '/home';
-  static const babyRegistration = '/welcome/baby-registration';
-  static const babyProfileSetup = '/welcome/baby-profile-setup';
-  static const inviteCode = '/welcome/invite-code';
+  static const babyRegistration = '$welcome/$_babyRegistration';
+  static const babyProfileSetup = '$welcome/$_babyProfileSetup';
+  static const inviteCode = '$welcome/$_inviteCode';
+
+  static const _babyRegistration = 'baby-registration';
+  static const _babyProfileSetup = 'baby-profile-setup';
+  static const _inviteCode = 'invite-code';
 }
 
 final router = GoRouter(
@@ -26,7 +32,10 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: AppRoutes.login,
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) => ChangeNotifierProvider(
+        create: (context) => LoginViewModel(context.read<AuthRepository>()),
+        child: const LoginView(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.home,
@@ -37,14 +46,14 @@ final router = GoRouter(
       builder: (context, state) => const WelcomeView(),
       routes: [
         GoRoute(
-          path: 'baby-registration',
+          path: AppRoutes._babyRegistration,
           builder: (context, state) => ChangeNotifierProvider(
             create: (_) => BabyRegistrationViewModel(),
             child: const BabyRegistrationView(),
           ),
         ),
         GoRoute(
-          path: 'baby-profile-setup',
+          path: AppRoutes._babyProfileSetup,
           builder: (context, state) {
             final flow = state.extra! as OnboardingFlow;
             return ChangeNotifierProvider(
@@ -57,7 +66,7 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: 'invite-code',
+          path: AppRoutes._inviteCode,
           builder: (context, state) => ChangeNotifierProvider(
             create: (context) => InviteCodeViewModel(
               repository: context.read<BabyRegistrationRepository>(),
