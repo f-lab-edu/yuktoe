@@ -5,7 +5,7 @@ import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
-import 'package:yuktoe/onboarding/view_models/baby_profile_setup_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 
 class BabyProfileSetupView extends StatefulWidget {
   const BabyProfileSetupView({super.key});

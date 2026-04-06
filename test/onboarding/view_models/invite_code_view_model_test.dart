@@ -6,7 +6,7 @@ import 'package:mockito/mockito.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
-import 'package:yuktoe/onboarding/view_models/invite_code_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 
 import 'invite_code_view_model_test.mocks.dart';
 

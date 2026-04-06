@@ -7,7 +7,7 @@ import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
-import 'package:yuktoe/onboarding/view_models/invite_code_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
 
 class InviteCodeView extends StatefulWidget {

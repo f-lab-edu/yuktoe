@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
-import 'package:yuktoe/onboarding/view_models/baby_registration_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/baby_registration_view_model.dart';
 
 void main() {
   late BabyRegistrationViewModel viewModel;

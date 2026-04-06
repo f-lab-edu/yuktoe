@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
-import 'package:yuktoe/presentation/auth/login/login_view_model.dart';
+import 'package:yuktoe/presentation/auth/login/vjew_models/login_view_model.dart';
 import 'package:yuktoe/presentation/home/home_screen.dart';
 
 class LoginScreen extends StatelessWidget {

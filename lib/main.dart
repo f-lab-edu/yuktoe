@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/core/config/app_env.dart';
 import 'package:yuktoe/core/config/dependencies.dart';
-import 'package:yuktoe/presentation/auth/login/login_screen.dart';
+import 'package:yuktoe/presentation/auth/login/views/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

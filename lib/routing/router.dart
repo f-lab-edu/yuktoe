@@ -2,13 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
-import 'package:yuktoe/onboarding/view_models/baby_profile_setup_view_model.dart';
-import 'package:yuktoe/onboarding/view_models/baby_registration_view_model.dart';
-import 'package:yuktoe/onboarding/view_models/invite_code_view_model.dart';
-import 'package:yuktoe/onboarding/views/baby_profile_setup_view.dart';
-import 'package:yuktoe/onboarding/views/baby_registration_view.dart';
-import 'package:yuktoe/onboarding/views/invite_code_view.dart';
-import 'package:yuktoe/onboarding/views/welcome_view.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/baby_registration_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
+import 'package:yuktoe/presentation/onboarding/views/baby_profile_setup_view.dart';
+import 'package:yuktoe/presentation/onboarding/views/baby_registration_view.dart';
+import 'package:yuktoe/presentation/onboarding/views/invite_code_view.dart';
+import 'package:yuktoe/presentation/onboarding/views/welcome_view.dart';
 
 abstract class AppRoutes {
   static const welcome = '/welcome';
