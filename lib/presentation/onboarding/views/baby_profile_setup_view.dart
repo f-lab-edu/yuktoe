@@ -6,6 +6,7 @@ import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
+import 'package:yuktoe/routing/router.dart';
 
 class BabyProfileSetupView extends StatelessWidget {
   const BabyProfileSetupView({super.key});
@@ -32,7 +33,7 @@ class BabyProfileSetupView extends StatelessWidget {
       return;
     }
 
-    // TODO: 홈 화면으로 이동
+    context.go(AppRoutes.home);
   }
 
   @override

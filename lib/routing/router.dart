@@ -9,17 +9,29 @@ import 'package:yuktoe/presentation/onboarding/views/baby_profile_setup_view.dar
 import 'package:yuktoe/presentation/onboarding/views/baby_registration_view.dart';
 import 'package:yuktoe/presentation/onboarding/views/invite_code_view.dart';
 import 'package:yuktoe/presentation/onboarding/views/welcome_view.dart';
+import 'package:yuktoe/presentation/auth/login/views/login_screen.dart';
+import 'package:yuktoe/presentation/home/home_screen.dart';
 
 abstract class AppRoutes {
+  static const login = '/login';
   static const welcome = '/welcome';
+  static const home = '/home';
   static const babyRegistration = '/welcome/baby-registration';
   static const babyProfileSetup = '/welcome/baby-profile-setup';
   static const inviteCode = '/welcome/invite-code';
 }
 
 final router = GoRouter(
-  initialLocation: AppRoutes.welcome,
+  initialLocation: AppRoutes.login,
   routes: [
+    GoRoute(
+      path: AppRoutes.login,
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.home,
+      builder: (context, state) => const HomeScreen(),
+    ),
     GoRoute(
       path: AppRoutes.welcome,
       builder: (context, state) => const WelcomeView(),
