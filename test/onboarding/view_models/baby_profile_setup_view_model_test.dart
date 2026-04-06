@@ -142,10 +142,10 @@ void main() {
       )).thenAnswer((_) async => 'baby-123');
 
       // when
-      final result = await viewModel.submit();
+      await viewModel.submit();
 
       // then
-      expect(result, 'baby-123');
+      expect(viewModel.babyId, 'baby-123');
       expect(viewModel.isLoading, isFalse);
       expect(viewModel.error, isNull);
     });
@@ -171,13 +171,13 @@ void main() {
       )).thenAnswer((_) async => 'baby-456');
 
       // when
-      final result = await viewModel.submit();
+      await viewModel.submit();
 
       // then
-      expect(result, 'baby-456');
+      expect(viewModel.babyId, 'baby-456');
     });
 
-    test('sets error and rethrows when createBaby throws', () async {
+    test('sets error when createBaby throws', () async {
       // given
       final viewModel = createViewModel();
       viewModel.setRelationship(Relationship.mom);
@@ -192,10 +192,12 @@ void main() {
         nickname: '엄마',
       )).thenThrow(Exception('서버 오류'));
 
-      // when & then
-      await expectLater(() => viewModel.submit(), throwsA(isA<Exception>()));
+      // when
+      await viewModel.submit();
 
+      // then
       expect(viewModel.error, '오류가 발생했습니다. 다시 시도해주세요.');
+      expect(viewModel.babyId, isNull);
       expect(viewModel.isLoading, isFalse);
     });
   });
@@ -215,15 +217,15 @@ void main() {
       )).thenAnswer((_) async => 'baby-789');
 
       // when
-      final result = await viewModel.submit();
+      await viewModel.submit();
 
       // then
-      expect(result, 'baby-789');
+      expect(viewModel.babyId, 'baby-789');
       expect(viewModel.isLoading, isFalse);
       expect(viewModel.error, isNull);
     });
 
-    test('sets error and rethrows when joinBabyByInviteCode throws', () async {
+    test('sets error when joinBabyByInviteCode throws', () async {
       // given
       final flow = JoinBabyFlow(inviteCode: 'ABC-123');
       final viewModel = createViewModel(flow: flow);
@@ -236,10 +238,12 @@ void main() {
         nickname: '아빠',
       )).thenThrow(Exception('서버 오류'));
 
-      // when & then
-      await expectLater(() => viewModel.submit(), throwsA(isA<Exception>()));
+      // when
+      await viewModel.submit();
 
+      // then
       expect(viewModel.error, '오류가 발생했습니다. 다시 시도해주세요.');
+      expect(viewModel.babyId, isNull);
       expect(viewModel.isLoading, isFalse);
     });
   });

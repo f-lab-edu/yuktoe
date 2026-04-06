@@ -18,11 +18,13 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
   String _nickname = '';
   bool _isLoading = false;
   String? _error;
+  String? _babyId;
 
   Relationship? get relationship => _relationship;
   String get nickname => _nickname;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get babyId => _babyId;
 
   bool get isValid =>
       _relationship != null && _nickname.trim().isNotEmpty && !_isLoading;
@@ -39,13 +41,14 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String> submit() async {
+  Future<void> submit() async {
     _isLoading = true;
     _error = null;
+    _babyId = null;
     notifyListeners();
 
     try {
-      final babyId = switch (flow) {
+      _babyId = switch (flow) {
         CreateBabyFlow(
           :final name,
           :final gender,
@@ -67,11 +70,8 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
             nickname: _nickname.trim(),
           ),
       };
-      return babyId;
     } catch (e) {
       _error = '오류가 발생했습니다. 다시 시도해주세요.';
-      notifyListeners();
-      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
