@@ -10,25 +10,20 @@ import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
 
-class InviteCodeView extends StatefulWidget {
+class InviteCodeView extends StatelessWidget {
   const InviteCodeView({super.key});
 
-  @override
-  State<InviteCodeView> createState() => _InviteCodeViewState();
-}
-
-class _InviteCodeViewState extends State<InviteCodeView> {
-  void _onViewModelChanged() {
+  void _onViewModelChanged(BuildContext context) {
     final viewModel = context.read<InviteCodeViewModel>();
 
     if (viewModel.verifiedBaby != null) {
-      _showBabyConfirmModal(viewModel.verifiedBaby!);
+      _showBabyConfirmModal(context, viewModel.verifiedBaby!);
     } else if (viewModel.error != null) {
-      _showNotFoundAlert();
+      _showNotFoundAlert(context);
     }
   }
 
-  void _showNotFoundAlert() {
+  void _showNotFoundAlert(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -60,7 +55,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
-  void _showBabyConfirmModal(BabySummary baby) {
+  void _showBabyConfirmModal(BuildContext context, BabySummary baby) {
     final genderText = baby.gender == Gender.male ? AppStrings.maleLabel : AppStrings.femaleLabel;
     final birthDate = baby.birthDate ?? baby.dueDate;
     if (birthDate == null) return;
@@ -265,11 +260,11 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
-  Future<void> _onSubmit() async {
+  Future<void> _onSubmit(BuildContext context) async {
     final viewModel = context.read<InviteCodeViewModel>();
     await viewModel.verifyInviteCode();
-    if (!mounted) return;
-    _onViewModelChanged();
+    if (!context.mounted) return;
+    _onViewModelChanged(context);
   }
 
   @override
@@ -318,7 +313,7 @@ class _InviteCodeViewState extends State<InviteCodeView> {
               ),
             ),
           ),
-          _buildSubmitButton(viewModel),
+          _buildSubmitButton(context, viewModel),
         ],
       ),
     );
@@ -556,13 +551,16 @@ class _InviteCodeViewState extends State<InviteCodeView> {
     );
   }
 
-  Widget _buildSubmitButton(InviteCodeViewModel viewModel) {
+  Widget _buildSubmitButton(
+    BuildContext context,
+    InviteCodeViewModel viewModel,
+  ) {
     final isEnabled = viewModel.isValid;
 
     return Padding(
       padding: const EdgeInsets.all(24),
       child: GestureDetector(
-        onTap: isEnabled ? _onSubmit : null,
+        onTap: isEnabled ? () => _onSubmit(context) : null,
         child: AnimatedOpacity(
           opacity: isEnabled ? 1.0 : 0.5,
           duration: const Duration(milliseconds: 200),

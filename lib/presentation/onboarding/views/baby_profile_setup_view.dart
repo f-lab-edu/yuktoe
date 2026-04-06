@@ -7,15 +7,8 @@ import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 
-class BabyProfileSetupView extends StatefulWidget {
+class BabyProfileSetupView extends StatelessWidget {
   const BabyProfileSetupView({super.key});
-
-  @override
-  State<BabyProfileSetupView> createState() => _BabyProfileSetupViewState();
-}
-
-class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
-  final _nicknameController = TextEditingController();
 
   static const _relationshipOptions = [
     (Relationship.mom, '👩', AppStrings.relationshipMom),
@@ -24,27 +17,22 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     (Relationship.other, '👤', AppStrings.relationshipOther),
   ];
 
-  @override
-  void dispose() {
-    _nicknameController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _onSubmit() async {
+  Future<void> _onSubmit(BuildContext context) async {
     final viewModel = context.read<BabyProfileSetupViewModel>();
-    try {
-      await viewModel.submit();
-      if (!mounted) return;
-      // TODO: 홈 화면으로 이동
-    } catch (_) {
-      if (!mounted) return;
+    await viewModel.submit();
+    if (!context.mounted) return;
+
+    if (viewModel.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.error ?? AppStrings.genericError),
+          content: Text(viewModel.error!),
           behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
     }
+
+    // TODO: 홈 화면으로 이동
   }
 
   @override
@@ -58,7 +46,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildHeader(),
+                  _buildHeader(context),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
@@ -74,13 +62,13 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
               ),
             ),
           ),
-          _buildSubmitButton(viewModel),
+          _buildSubmitButton(context, viewModel),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -193,7 +181,6 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
         _buildLabel(AppStrings.nicknameLabel, isRequired: true),
         const SizedBox(height: 8),
         TextField(
-          controller: _nicknameController,
           onChanged: viewModel.setNickname,
           maxLength: BabyProfileSetupViewModel.nicknameMaxLength,
           style: AppTextStyles.body.regular.copyWith(
@@ -250,7 +237,10 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
     );
   }
 
-  Widget _buildSubmitButton(BabyProfileSetupViewModel viewModel) {
+  Widget _buildSubmitButton(
+    BuildContext context,
+    BabyProfileSetupViewModel viewModel,
+  ) {
     final isEnabled = viewModel.isValid;
 
     return Padding(
@@ -261,7 +251,7 @@ class _BabyProfileSetupViewState extends State<BabyProfileSetupView> {
         MediaQuery.of(context).padding.bottom + 24,
       ),
       child: GestureDetector(
-        onTap: isEnabled ? _onSubmit : null,
+        onTap: isEnabled ? () => _onSubmit(context) : null,
         child: AnimatedOpacity(
           opacity: isEnabled ? 1.0 : 0.5,
           duration: const Duration(milliseconds: 200),

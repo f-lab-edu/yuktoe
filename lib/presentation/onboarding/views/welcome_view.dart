@@ -118,42 +118,42 @@ class _OptionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(_cardPadding),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(_cardRadius),
-            border: Border.all(color: AppColors.borderPrimary, width: 2),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: _iconContainerSize,
-                height: _iconContainerSize,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(_iconRadius),
-                  gradient: iconGradient,
-                ),
-                child: Center(
-                  child: Icon(icon, size: _iconSize, color: AppColors.white),
-                ),
-              ),
-              const SizedBox(height: _iconTitleSpacing),
-              Text(
-                title,
-                style: AppTextStyles.title.bold.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: _titleDescriptionSpacing),
-              Text(
-                description,
-                style: AppTextStyles.label.medium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
+        width: double.infinity,
+        padding: const EdgeInsets.all(_cardPadding),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(_cardRadius),
+          border: Border.all(color: AppColors.borderPrimary, width: 2),
         ),
+        child: Column(
+          children: [
+            Container(
+              width: _iconContainerSize,
+              height: _iconContainerSize,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_iconRadius),
+                gradient: iconGradient,
+              ),
+              child: Center(
+                child: Icon(icon, size: _iconSize, color: AppColors.white),
+              ),
+            ),
+            const SizedBox(height: _iconTitleSpacing),
+            Text(
+              title,
+              style: AppTextStyles.title.bold.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: _titleDescriptionSpacing),
+            Text(
+              description,
+              style: AppTextStyles.label.medium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
