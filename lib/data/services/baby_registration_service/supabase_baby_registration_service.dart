@@ -53,31 +53,18 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
 
       if (result == null) return Result.ok(null);
 
+      final Map<String, dynamic> json;
       if (result is Map<String, dynamic>) {
-        return Result.ok(BabySummary.fromJson(result));
+        json = result;
+      } else {
+        return Result.error(AppException('초대코드 검증 응답 형식이 올바르지 않습니다.'));
       }
 
-      if (result is List && result.isNotEmpty) {
-        final first = result.first;
-        if (first is Map<String, dynamic>) {
-          return Result.ok(BabySummary.fromJson(first));
-        }
-        if (first is Map) {
-          return Result.ok(
-            BabySummary.fromJson(Map<String, dynamic>.from(first)),
-          );
-        }
+      try {
+        return Result.ok(BabySummary.fromJson(json));
+      } on Exception catch (e) {
+        return Result.error(AppException('초대코드 검증 응답 파싱에 실패했습니다.', cause: e));
       }
-
-      if (result is Map) {
-        return Result.ok(
-          BabySummary.fromJson(Map<String, dynamic>.from(result)),
-        );
-      }
-
-      return Result.error(
-        AppException('초대코드 검증 응답 형식이 올바르지 않습니다.'),
-      );
     } on Exception catch (e) {
       return Result.error(AppException('초대코드 검증에 실패했습니다.', cause: e));
     }
