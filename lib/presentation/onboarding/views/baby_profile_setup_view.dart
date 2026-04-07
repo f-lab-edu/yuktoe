@@ -4,19 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/app_strings.dart';
-import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
 
 class BabyProfileSetupView extends StatelessWidget {
   const BabyProfileSetupView({super.key});
 
-  static const _relationshipOptions = [
-    (Relationship.mother, '👩', AppStrings.relationshipMom),
-    (Relationship.father, '👨', AppStrings.relationshipDad),
-    (Relationship.family, '👨\u200D👩\u200D👧', AppStrings.relationshipFamily),
-    (Relationship.other, '👤', AppStrings.relationshipOther),
-  ];
 
   Future<void> _onSubmit(BuildContext context) async {
     final viewModel = context.read<BabyProfileSetupViewModel>();
@@ -168,14 +161,13 @@ class BabyProfileSetupView extends StatelessWidget {
           shrinkWrap: true,
           padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
-          children: _relationshipOptions.map((option) {
-            final (relationship, emoji, label) = option;
-            final isSelected = viewModel.relationship == relationship;
+          children: BabyProfileSetupViewModel.relationshipOptions.map((option) {
+            final isSelected = viewModel.relationship == option.value;
             return _RelationshipCard(
-              emoji: emoji,
-              label: label,
+              emoji: option.emoji,
+              label: option.label,
               isSelected: isSelected,
-              onTap: () => viewModel.setRelationship(relationship),
+              onTap: () => viewModel.setRelationship(option.value),
             );
           }).toList(),
         ),
