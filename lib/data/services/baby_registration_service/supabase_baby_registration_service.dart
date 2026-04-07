@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart';
 
 import 'baby_registration_service.dart';
 
@@ -44,7 +44,7 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
   }
 
   @override
-  Future<Result<BabySummary?>> verifyInviteCode(String code) async {
+  Future<Result<BabyPreview?>> verifyInviteCode(String code) async {
     try {
       final result = await _client.rpc(
         'verify_invite_code',
@@ -61,7 +61,7 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
       }
 
       try {
-        return Result.ok(BabySummary.fromJson(json));
+        return Result.ok(BabyPreview.fromJson(json));
       } on Exception catch (e) {
         return Result.error(AppException('초대코드 검증 응답 파싱에 실패했습니다.', cause: e));
       }

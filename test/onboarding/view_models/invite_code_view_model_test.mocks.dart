@@ -9,7 +9,7 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart'
     as _i2;
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart'
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart'
     as _i5;
 
 // ignore_for_file: type=lint
@@ -71,12 +71,12 @@ class MockBabyRegistrationRepository extends _i1.Mock
           as _i3.Future<String>);
 
   @override
-  _i3.Future<_i5.BabySummary?> verifyInviteCode(String? code) =>
+  _i3.Future<_i5.BabyPreview?> verifyInviteCode(String? code) =>
       (super.noSuchMethod(
             Invocation.method(#verifyInviteCode, [code]),
-            returnValue: _i3.Future<_i5.BabySummary?>.value(),
+            returnValue: _i3.Future<_i5.BabyPreview?>.value(),
           )
-          as _i3.Future<_i5.BabySummary?>);
+          as _i3.Future<_i5.BabyPreview?>);
 
   @override
   _i3.Future<String> joinBabyByInviteCode({

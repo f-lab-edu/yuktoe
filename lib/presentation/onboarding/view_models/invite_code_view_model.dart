@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart';
 
 class InviteCodeViewModel extends ChangeNotifier {
   final BabyRegistrationRepository _repository;
@@ -14,13 +14,13 @@ class InviteCodeViewModel extends ChangeNotifier {
   bool _agreedToTerms = false;
   bool _isLoading = false;
   String? _error;
-  BabySummary? _verifiedBaby;
+  BabyPreview? _verifiedBaby;
 
   String get code => _code;
   bool get agreedToTerms => _agreedToTerms;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  BabySummary? get verifiedBaby => _verifiedBaby;
+  BabyPreview? get verifiedBaby => _verifiedBaby;
 
   bool get isValid => _code.trim().isNotEmpty && _agreedToTerms && !_isLoading;
 
@@ -51,7 +51,7 @@ class InviteCodeViewModel extends ChangeNotifier {
     }
   }
 
-  String? get babyName => _verifiedBaby?.name;
+  String? get babyName => _verifiedBaby?.maskedName;
 
   String? get babyGenderText {
     final gender = _verifiedBaby?.gender;
@@ -59,16 +59,10 @@ class InviteCodeViewModel extends ChangeNotifier {
     return gender == Gender.male ? AppStrings.maleLabel : AppStrings.femaleLabel;
   }
 
-  String? get babyFormattedDate {
-    final date = _verifiedBaby?.birthDate ?? _verifiedBaby?.dueDate;
-    if (date == null) return null;
-    return '${date.year}년 ${date.month}월 ${date.day}일';
-  }
-
-  int? get babyDDay {
-    final date = _verifiedBaby?.birthDate ?? _verifiedBaby?.dueDate;
-    if (date == null) return null;
-    return DateTime.now().difference(date).inDays;
+  String? get babyBirthYear {
+    final year = _verifiedBaby?.birthYear;
+    if (year == null) return null;
+    return '$year년생';
   }
 
   void clearVerifiedBaby() {

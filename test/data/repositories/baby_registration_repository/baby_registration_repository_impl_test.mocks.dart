@@ -10,7 +10,7 @@ import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:yuktoe/core/result.dart' as _i4;
 import 'package:yuktoe/data/services/baby_registration_service/baby_registration_service.dart'
     as _i2;
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart'
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart'
     as _i6;
 
 // ignore_for_file: type=lint
@@ -72,17 +72,17 @@ class MockBabyRegistrationService extends _i1.Mock
           as _i3.Future<_i4.Result<String>>);
 
   @override
-  _i3.Future<_i4.Result<_i6.BabySummary?>> verifyInviteCode(String? code) =>
+  _i3.Future<_i4.Result<_i6.BabyPreview?>> verifyInviteCode(String? code) =>
       (super.noSuchMethod(
             Invocation.method(#verifyInviteCode, [code]),
-            returnValue: _i3.Future<_i4.Result<_i6.BabySummary?>>.value(
-              _i5.dummyValue<_i4.Result<_i6.BabySummary?>>(
+            returnValue: _i3.Future<_i4.Result<_i6.BabyPreview?>>.value(
+              _i5.dummyValue<_i4.Result<_i6.BabyPreview?>>(
                 this,
                 Invocation.method(#verifyInviteCode, [code]),
               ),
             ),
           )
-          as _i3.Future<_i4.Result<_i6.BabySummary?>>);
+          as _i3.Future<_i4.Result<_i6.BabyPreview?>>);
 
   @override
   _i3.Future<_i4.Result<String>> joinBabyByInviteCode({

@@ -1,4 +1,4 @@
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart';
 
 abstract interface class BabyRegistrationRepository {
   Future<String> createBaby({
@@ -10,7 +10,7 @@ abstract interface class BabyRegistrationRepository {
     required String nickname,
   });
 
-  Future<BabySummary?> verifyInviteCode(String code);
+  Future<BabyPreview?> verifyInviteCode(String code);
 
   Future<String> joinBabyByInviteCode({
     required String code,

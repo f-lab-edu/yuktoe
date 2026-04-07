@@ -16,19 +16,14 @@ class InviteCodeView extends StatelessWidget {
 
     final name = viewModel.babyName;
     final genderText = viewModel.babyGenderText;
-    final formattedDate = viewModel.babyFormattedDate;
-    final dDay = viewModel.babyDDay;
+    final birthYear = viewModel.babyBirthYear;
 
-    if (name != null &&
-        genderText != null &&
-        formattedDate != null &&
-        dDay != null) {
+    if (name != null && genderText != null && birthYear != null) {
       _showBabyConfirmModal(
         context,
         name: name,
         genderText: genderText,
-        formattedDate: formattedDate,
-        dDay: dDay,
+        birthYear: birthYear,
       );
     } else if (viewModel.error != null) {
       _showNotFoundAlert(context);
@@ -71,8 +66,7 @@ class InviteCodeView extends StatelessWidget {
     BuildContext context, {
     required String name,
     required String genderText,
-    required String formattedDate,
-    required int dDay,
+    required String birthYear,
   }) {
 
     showModalBottomSheet(
@@ -153,7 +147,7 @@ class InviteCodeView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(100),
                           ),
                           child: Text(
-                            'D+$dDay',
+                            birthYear,
                             style: AppTextStyles.label.semibold.copyWith(
                               color: AppColors.textOnDark,
                             ),
@@ -175,7 +169,7 @@ class InviteCodeView extends StatelessWidget {
                           ),
                           child: Center(
                             child: Icon(
-                              Icons.calendar_today_outlined,
+                              Icons.cake_outlined,
                               size: 20,
                               color: AppColors.primary.t600,
                             ),
@@ -193,7 +187,7 @@ class InviteCodeView extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              formattedDate,
+                              birthYear,
                               style: AppTextStyles.body.semibold.copyWith(
                                 color: AppColors.textPrimary,
                               ),

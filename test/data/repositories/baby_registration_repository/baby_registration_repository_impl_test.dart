@@ -6,7 +6,7 @@ import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository_impl.dart';
 import 'package:yuktoe/data/services/baby_registration_service/baby_registration_service.dart';
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart';
 
 import 'baby_registration_repository_impl_test.mocks.dart';
 
@@ -17,7 +17,7 @@ void main() {
 
   setUpAll(() {
     provideDummy<Result<String>>(Result.ok(''));
-    provideDummy<Result<BabySummary?>>(Result.ok(null));
+    provideDummy<Result<BabyPreview?>>(Result.ok(null));
   });
 
   setUp(() {
@@ -85,12 +85,11 @@ void main() {
   group('verifyInviteCode', () {
     const code = 'ABC-123';
 
-    test('returns BabySummary when service returns Ok with data', () async {
+    test('returns BabyPreview when service returns Ok with data', () async {
       // given
-      final baby = BabySummary(
-        babyId: 'baby-1',
-        name: '아기',
-        birthDate: DateTime(2025, 1, 1),
+      final baby = BabyPreview(
+        maskedName: '김*수',
+        birthYear: 2025,
         gender: Gender.male,
       );
       when(mockService.verifyInviteCode(code))

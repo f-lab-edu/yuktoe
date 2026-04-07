@@ -5,7 +5,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
+import 'package:yuktoe/domain/models/baby_registration/baby_preview.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 
 import 'invite_code_view_model_test.mocks.dart';
@@ -88,10 +88,9 @@ void main() {
   group('verifyInviteCode', () {
     test('sets verifiedBaby when repository returns data', () async {
       // given
-      final baby = BabySummary(
-        babyId: 'baby-1',
-        name: '아기',
-        birthDate: DateTime(2025, 1, 1),
+      final baby = BabyPreview(
+        maskedName: '김*수',
+        birthYear: 2025,
         gender: Gender.male,
       );
       viewModel.setCode('ABC-123');
@@ -161,7 +160,7 @@ void main() {
       viewModel.toggleAgreedToTerms();
       expect(viewModel.isValid, isTrue);
 
-      final completer = Completer<BabySummary?>();
+      final completer = Completer<BabyPreview?>();
       when(mockRepository.verifyInviteCode('ABC-123'))
           .thenAnswer((_) => completer.future);
 
@@ -185,10 +184,9 @@ void main() {
       expect(viewModel.error, isNotNull);
 
       // given - second call succeeds
-      final baby = BabySummary(
-        babyId: 'baby-1',
-        name: '아기',
-        birthDate: DateTime(2025, 1, 1),
+      final baby = BabyPreview(
+        maskedName: '이*연',
+        birthYear: 2025,
         gender: Gender.female,
       );
       viewModel.setCode('GOOD');
@@ -207,10 +205,9 @@ void main() {
   group('clearVerifiedBaby', () {
     test('clears verifiedBaby and error, notifies listeners', () async {
       // given
-      final baby = BabySummary(
-        babyId: 'baby-1',
-        name: '아기',
-        birthDate: DateTime(2025, 1, 1),
+      final baby = BabyPreview(
+        maskedName: '김*수',
+        birthYear: 2025,
         gender: Gender.male,
       );
       viewModel.setCode('ABC-123');
