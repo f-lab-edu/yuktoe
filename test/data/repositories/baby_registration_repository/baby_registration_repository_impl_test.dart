@@ -58,7 +58,7 @@ void main() {
 
     test('throws when service returns Error', () async {
       // given
-      final exception = AppException('생성 실패');
+      final exception = AppException(ErrorCode.unknown, 'create failed');
       when(mockService.createBaby(
         name: name,
         birthDate: birthDate,
@@ -116,7 +116,7 @@ void main() {
 
     test('throws when service returns Error', () async {
       // given
-      final exception = AppException('검증 실패');
+      final exception = AppException(ErrorCode.unknown, 'verify failed');
       when(mockService.verifyInviteCode(code))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -154,7 +154,7 @@ void main() {
 
     test('throws when service returns Error', () async {
       // given
-      final exception = AppException('참여 실패');
+      final exception = AppException(ErrorCode.unknown, 'join failed');
       when(mockService.joinBabyByInviteCode(
         code: code,
         relationship: relationship,

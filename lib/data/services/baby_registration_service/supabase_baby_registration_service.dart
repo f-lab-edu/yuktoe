@@ -34,12 +34,16 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
       );
 
       if (result == null) {
-        return Result.error(AppException('아기 생성 결과를 받지 못했습니다.'));
+        return Result.error(
+          AppException(ErrorCode.invalidResponse, 'create_baby_with_owner returned null'),
+        );
       }
 
       return Result.ok(result.toString());
     } on Exception catch (e) {
-      return Result.error(AppException('아기 생성에 실패했습니다.', cause: e));
+      return Result.error(
+        AppException(ErrorCode.unknown, 'create_baby_with_owner failed', cause: e),
+      );
     }
   }
 
@@ -57,16 +61,22 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
       if (result is Map<String, dynamic>) {
         json = result;
       } else {
-        return Result.error(AppException('초대코드 검증 응답 형식이 올바르지 않습니다.'));
+        return Result.error(
+          AppException(ErrorCode.invalidResponse, 'verify_invite_code returned unexpected type: ${result.runtimeType}'),
+        );
       }
 
       try {
         return Result.ok(BabyPreview.fromJson(json));
       } on Exception catch (e) {
-        return Result.error(AppException('초대코드 검증 응답 파싱에 실패했습니다.', cause: e));
+        return Result.error(
+          AppException(ErrorCode.parseFailed, 'Failed to parse BabyPreview', cause: e),
+        );
       }
     } on Exception catch (e) {
-      return Result.error(AppException('초대코드 검증에 실패했습니다.', cause: e));
+      return Result.error(
+        AppException(ErrorCode.unknown, 'verify_invite_code failed', cause: e),
+      );
     }
   }
 
@@ -87,12 +97,16 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
       );
 
       if (result == null) {
-        return Result.error(AppException('아기 참여 결과를 받지 못했습니다.'));
+        return Result.error(
+          AppException(ErrorCode.invalidResponse, 'join_baby_by_invite_code returned null'),
+        );
       }
 
       return Result.ok(result.toString());
     } on Exception catch (e) {
-      return Result.error(AppException('아기 참여에 실패했습니다.', cause: e));
+      return Result.error(
+        AppException(ErrorCode.unknown, 'join_baby_by_invite_code failed', cause: e),
+      );
     }
   }
 }

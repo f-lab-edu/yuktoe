@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
@@ -35,11 +36,11 @@ class LoginViewModel extends ChangeNotifier {
           _session = _authRepository.session;
         case Error<void>():
           _session = null;
-          _errorMessage = result.error.message;
+          _errorMessage = AppStrings.genericError;
       }
     } catch (e) {
       _session = null;
-      _errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
+      _errorMessage = AppStrings.genericError;
     } finally {
       _isLoading = false;
       notifyListeners();
