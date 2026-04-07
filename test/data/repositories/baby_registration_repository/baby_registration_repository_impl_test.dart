@@ -73,6 +73,7 @@ void main() {
 
     test('returns BabyPreview when service returns Ok with data', () async {
       final baby = BabyPreview(
+        babyId: 'baby-1',
         maskedName: '김*수',
         birthYear: 2025,
         gender: Gender.male,
@@ -106,25 +107,25 @@ void main() {
     });
   });
 
-  group('joinBabyByInviteCode', () {
-    const code = 'ABC-123';
+  group('joinBaby', () {
+    const babyId = 'baby-456';
 
-    test('returns babyId when service returns Ok', () async {
-      when(mockService.joinBabyByInviteCode(code: code))
-          .thenAnswer((_) async => Result.ok('baby-456'));
+    test('completes when service returns Ok', () async {
+      when(mockService.joinBaby(babyId: babyId))
+          .thenAnswer((_) async => Result.ok(null));
 
-      final result = await repository.joinBabyByInviteCode(code: code);
+      await repository.joinBaby(babyId: babyId);
 
-      expect(result, 'baby-456');
+      verify(mockService.joinBaby(babyId: babyId)).called(1);
     });
 
     test('throws when service returns Error', () async {
       final exception = AppException(ErrorCode.unknown, 'join failed');
-      when(mockService.joinBabyByInviteCode(code: code))
+      when(mockService.joinBaby(babyId: babyId))
           .thenAnswer((_) async => Result.error(exception));
 
       expect(
-        () => repository.joinBabyByInviteCode(code: code),
+        () => repository.joinBaby(babyId: babyId),
         throwsA(same(exception)),
       );
     });

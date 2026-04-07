@@ -77,23 +77,17 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
   }
 
   @override
-  Future<Result<String>> joinBabyByInviteCode({required String code}) async {
+  Future<Result<void>> joinBaby({required String babyId}) async {
     try {
-      final result = await _client.rpc(
-        'join_baby_by_invite_code',
-        params: {'p_code': code},
+      await _client.rpc(
+        'join_baby',
+        params: {'p_baby_id': babyId},
       );
 
-      if (result == null) {
-        return Result.error(
-          AppException(ErrorCode.invalidResponse, 'join_baby_by_invite_code returned null'),
-        );
-      }
-
-      return Result.ok(result.toString());
+      return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(
-        AppException(ErrorCode.unknown, 'join_baby_by_invite_code failed', cause: e),
+        AppException(ErrorCode.unknown, 'join_baby failed', cause: e),
       );
     }
   }

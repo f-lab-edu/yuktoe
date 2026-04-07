@@ -79,19 +79,17 @@ class MockBabyRegistrationService extends _i1.Mock
           as _i3.Future<_i4.Result<_i6.BabyPreview?>>);
 
   @override
-  _i3.Future<_i4.Result<String>> joinBabyByInviteCode({
-    required String? code,
-  }) =>
+  _i3.Future<_i4.Result<void>> joinBaby({required String? babyId}) =>
       (super.noSuchMethod(
-            Invocation.method(#joinBabyByInviteCode, [], {#code: code}),
-            returnValue: _i3.Future<_i4.Result<String>>.value(
-              _i5.dummyValue<_i4.Result<String>>(
+            Invocation.method(#joinBaby, [], {#babyId: babyId}),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i5.dummyValue<_i4.Result<void>>(
                 this,
-                Invocation.method(#joinBabyByInviteCode, [], {#code: code}),
+                Invocation.method(#joinBaby, [], {#babyId: babyId}),
               ),
             ),
           )
-          as _i3.Future<_i4.Result<String>>);
+          as _i3.Future<_i4.Result<void>>);
 
   @override
   _i3.Future<_i4.Result<void>> setupUserProfile({

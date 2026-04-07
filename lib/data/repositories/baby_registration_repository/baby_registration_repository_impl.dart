@@ -43,13 +43,13 @@ class BabyRegistrationRepositoryImpl implements BabyRegistrationRepository {
   }
 
   @override
-  Future<String> joinBabyByInviteCode({required String code}) async {
-    final result = await _service.joinBabyByInviteCode(code: code);
+  Future<void> joinBaby({required String babyId}) async {
+    final result = await _service.joinBaby(babyId: babyId);
 
     switch (result) {
-      case Ok<String>():
-        return result.value;
-      case Error<String>():
+      case Ok<void>():
+        return;
+      case Error<void>():
         throw result.error;
     }
   }

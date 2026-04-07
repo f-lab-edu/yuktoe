@@ -68,13 +68,16 @@ class InviteCodeViewModel extends ChangeNotifier {
   }
 
   Future<void> joinBaby() async {
+    if (_verifiedBaby == null) return;
+
     _isLoading = true;
     _error = null;
     _babyId = null;
     notifyListeners();
 
     try {
-      _babyId = await _repository.joinBabyByInviteCode(code: _code);
+      await _repository.joinBaby(babyId: _verifiedBaby!.babyId);
+      _babyId = _verifiedBaby!.babyId;
     } catch (_) {
       _error = AppStrings.genericError;
     } finally {

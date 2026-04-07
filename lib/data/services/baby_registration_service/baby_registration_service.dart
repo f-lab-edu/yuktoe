@@ -11,7 +11,7 @@ abstract interface class BabyRegistrationService {
 
   Future<Result<BabyPreview?>> verifyInviteCode(String code);
 
-  Future<Result<String>> joinBabyByInviteCode({required String code});
+  Future<Result<void>> joinBaby({required String babyId});
 
   Future<Result<void>> setupUserProfile({
     required String babyId,

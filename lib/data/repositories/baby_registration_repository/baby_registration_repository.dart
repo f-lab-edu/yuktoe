@@ -10,7 +10,7 @@ abstract interface class BabyRegistrationRepository {
 
   Future<BabyPreview?> verifyInviteCode(String code);
 
-  Future<String> joinBabyByInviteCode({required String code});
+  Future<void> joinBaby({required String babyId});
 
   Future<void> setupUserProfile({
     required String babyId,

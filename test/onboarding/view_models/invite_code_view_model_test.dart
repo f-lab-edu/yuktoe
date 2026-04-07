@@ -89,6 +89,7 @@ void main() {
     test('sets verifiedBaby when repository returns data', () async {
       // given
       final baby = BabyPreview(
+        babyId: 'baby-1',
         maskedName: '김*수',
         birthYear: 2025,
         gender: Gender.male,
@@ -185,6 +186,7 @@ void main() {
 
       // given - second call succeeds
       final baby = BabyPreview(
+        babyId: 'baby-1',
         maskedName: '이*연',
         birthYear: 2025,
         gender: Gender.female,
@@ -206,6 +208,7 @@ void main() {
     test('clears verifiedBaby and error, notifies listeners', () async {
       // given
       final baby = BabyPreview(
+        babyId: 'baby-1',
         maskedName: '김*수',
         birthYear: 2025,
         gender: Gender.male,
