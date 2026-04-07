@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
@@ -71,7 +72,7 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
           ),
       };
     } catch (e) {
-      _error = '오류가 발생했습니다. 다시 시도해주세요.';
+      _error = AppStrings.genericError;
     } finally {
       _isLoading = false;
       notifyListeners();
