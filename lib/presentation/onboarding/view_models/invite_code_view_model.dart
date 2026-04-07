@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/constants/app_strings.dart';
+import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
 
@@ -47,6 +49,26 @@ class InviteCodeViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  String? get babyName => _verifiedBaby?.name;
+
+  String? get babyGenderText {
+    final gender = _verifiedBaby?.gender;
+    if (gender == null) return null;
+    return gender == Gender.male ? AppStrings.maleLabel : AppStrings.femaleLabel;
+  }
+
+  String? get babyFormattedDate {
+    final date = _verifiedBaby?.birthDate ?? _verifiedBaby?.dueDate;
+    if (date == null) return null;
+    return '${date.year}년 ${date.month}월 ${date.day}일';
+  }
+
+  int? get babyDDay {
+    final date = _verifiedBaby?.birthDate ?? _verifiedBaby?.dueDate;
+    if (date == null) return null;
+    return DateTime.now().difference(date).inDays;
   }
 
   void clearVerifiedBaby() {

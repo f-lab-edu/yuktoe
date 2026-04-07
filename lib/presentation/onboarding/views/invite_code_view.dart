@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/app_strings.dart';
-import 'package:yuktoe/constants/enum/gender.dart';
-import 'package:yuktoe/domain/models/baby_registration/baby_summary.dart';
 import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
@@ -16,8 +14,22 @@ class InviteCodeView extends StatelessWidget {
   void _onViewModelChanged(BuildContext context) {
     final viewModel = context.read<InviteCodeViewModel>();
 
-    if (viewModel.verifiedBaby != null) {
-      _showBabyConfirmModal(context, viewModel.verifiedBaby!);
+    final name = viewModel.babyName;
+    final genderText = viewModel.babyGenderText;
+    final formattedDate = viewModel.babyFormattedDate;
+    final dDay = viewModel.babyDDay;
+
+    if (name != null &&
+        genderText != null &&
+        formattedDate != null &&
+        dDay != null) {
+      _showBabyConfirmModal(
+        context,
+        name: name,
+        genderText: genderText,
+        formattedDate: formattedDate,
+        dDay: dDay,
+      );
     } else if (viewModel.error != null) {
       _showNotFoundAlert(context);
     }
@@ -55,14 +67,13 @@ class InviteCodeView extends StatelessWidget {
     );
   }
 
-  void _showBabyConfirmModal(BuildContext context, BabySummary baby) {
-    final genderText = baby.gender == Gender.male ? AppStrings.maleLabel : AppStrings.femaleLabel;
-    final birthDate = baby.birthDate ?? baby.dueDate;
-    if (birthDate == null) return;
-
-    final dDay = DateTime.now().difference(birthDate).inDays;
-    final formattedDate =
-        '${birthDate.year}년 ${birthDate.month}월 ${birthDate.day}일';
+  void _showBabyConfirmModal(
+    BuildContext context, {
+    required String name,
+    required String genderText,
+    required String formattedDate,
+    required int dDay,
+  }) {
 
     showModalBottomSheet(
       context: context,
@@ -119,7 +130,7 @@ class InviteCodeView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          baby.name,
+                          name,
                           style: AppTextStyles.heading2.bold.copyWith(
                             color: AppColors.textOnDark,
                           ),
