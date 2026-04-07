@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/common/views/logo.dart';
 import 'package:yuktoe/constants/app_strings.dart';
+import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/gen/assets.gen.dart';
+import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
+import 'package:yuktoe/routing/router.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -15,8 +20,20 @@ class LoginView extends StatelessWidget {
   static const _buttonSectionSpacing = 64.0;
   static const _buttonSpacing = 16.0;
 
+  Future<void> _onSignIn(
+    BuildContext context,
+    SocialAuthProvider provider,
+  ) async {
+    final viewModel = context.read<LoginViewModel>();
+    await viewModel.signIn(provider);
+    if (!context.mounted) return;
+    if (viewModel.isLoggedIn) context.go(AppRoutes.welcome);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<LoginViewModel>();
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -31,7 +48,9 @@ class LoginView extends StatelessWidget {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+              padding: const EdgeInsets.symmetric(
+                horizontal: _horizontalPadding,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -52,8 +71,18 @@ class LoginView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: _buttonSectionSpacing),
+                  if (viewModel.errorMessage != null) ...[
+                    Text(
+                      viewModel.errorMessage!,
+                      style: const TextStyle(color: AppColors.error),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   SocialLoginButton(
-                    onPressed: () {},
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => _onSignIn(context, SocialAuthProvider.kakao),
                     backgroundColor: AppColors.kakaoBackground,
                     icon: Assets.icons.kakao.svg(width: 24),
                     label: AppStrings.kakaoLogin,
@@ -61,7 +90,9 @@ class LoginView extends StatelessWidget {
                   ),
                   const SizedBox(height: _buttonSpacing),
                   SocialLoginButton(
-                    onPressed: () {},
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => _onSignIn(context, SocialAuthProvider.google),
                     backgroundColor: AppColors.backgroundPrimary,
                     icon: Assets.icons.google.svg(width: 24),
                     label: AppStrings.googleLogin,
@@ -69,12 +100,16 @@ class LoginView extends StatelessWidget {
                   ),
                   const SizedBox(height: _buttonSpacing),
                   SocialLoginButton(
-                    onPressed: () {},
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => _onSignIn(context, SocialAuthProvider.apple),
                     backgroundColor: AppColors.black,
                     icon: Assets.icons.apple.svg(width: 24),
                     label: AppStrings.appleLogin,
                     textColor: AppColors.textOnDark,
                   ),
+                  const SizedBox(height: 24),
+                  if (viewModel.isLoading) const CircularProgressIndicator(),
                 ],
               ),
             ),
@@ -86,7 +121,7 @@ class LoginView extends StatelessWidget {
 }
 
 class SocialLoginButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color backgroundColor;
   final Widget icon;
   final String label;
