@@ -1,6 +1,6 @@
 enum Relationship {
-  mom('mom'),
-  dad('dad'),
+  mother('mother'),
+  father('father'),
   family('family'),
   other('other');
 

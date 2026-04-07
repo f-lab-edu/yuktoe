@@ -12,8 +12,8 @@ class BabyProfileSetupView extends StatelessWidget {
   const BabyProfileSetupView({super.key});
 
   static const _relationshipOptions = [
-    (Relationship.mom, '👩', AppStrings.relationshipMom),
-    (Relationship.dad, '👨', AppStrings.relationshipDad),
+    (Relationship.mother, '👩', AppStrings.relationshipMom),
+    (Relationship.father, '👨', AppStrings.relationshipDad),
     (Relationship.family, '👨\u200D👩\u200D👧', AppStrings.relationshipFamily),
     (Relationship.other, '👤', AppStrings.relationshipOther),
   ];
@@ -80,7 +80,10 @@ class BabyProfileSetupView extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.backgroundVioletLight, AppColors.backgroundPrimary],
+          colors: [
+            AppColors.backgroundVioletLight,
+            AppColors.backgroundPrimary,
+          ],
         ),
       ),
       child: Column(
@@ -90,7 +93,10 @@ class BabyProfileSetupView extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(left: 4),
               child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: AppColors.textPrimary,
+                ),
                 onPressed: () => context.pop(),
               ),
             ),

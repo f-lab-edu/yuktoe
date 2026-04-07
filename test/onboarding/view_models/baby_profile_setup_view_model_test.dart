@@ -21,7 +21,8 @@ void main() {
 
   BabyProfileSetupViewModel createViewModel({OnboardingFlow? flow}) {
     return BabyProfileSetupViewModel(
-      flow: flow ??
+      flow:
+          flow ??
           CreateBabyFlow(
             name: '아기',
             gender: Gender.male,
@@ -49,9 +50,9 @@ void main() {
       var notified = false;
       viewModel.addListener(() => notified = true);
 
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
 
-      expect(viewModel.relationship, Relationship.mom);
+      expect(viewModel.relationship, Relationship.mother);
       expect(notified, isTrue);
     });
   });
@@ -97,14 +98,14 @@ void main() {
 
     test('returns false when nickname is empty', () {
       final viewModel = createViewModel();
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
 
       expect(viewModel.isValid, isFalse);
     });
 
     test('returns false when nickname is whitespace only', () {
       final viewModel = createViewModel();
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('   ');
 
       expect(viewModel.isValid, isFalse);
@@ -112,7 +113,7 @@ void main() {
 
     test('returns true when all required fields are set', () {
       final viewModel = createViewModel();
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
 
       expect(viewModel.isValid, isTrue);
@@ -129,17 +130,19 @@ void main() {
         dueDate: DateTime(2025, 2, 1),
       );
       final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
 
-      when(mockRepository.createBaby(
-        name: '아기',
-        birthDate: '2025-01-15',
-        dueDate: '2025-02-01',
-        gender: 'male',
-        relationship: 'mom',
-        nickname: '엄마',
-      )).thenAnswer((_) async => 'baby-123');
+      when(
+        mockRepository.createBaby(
+          name: '아기',
+          birthDate: '2025-01-15',
+          dueDate: '2025-02-01',
+          gender: 'male',
+          relationship: 'mother',
+          nickname: '엄마',
+        ),
+      ).thenAnswer((_) async => 'baby-123');
 
       // when
       await viewModel.submit();
@@ -158,17 +161,19 @@ void main() {
         birthDate: DateTime(2025, 3, 1),
       );
       final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.dad);
+      viewModel.setRelationship(Relationship.father);
       viewModel.setNickname('아빠');
 
-      when(mockRepository.createBaby(
-        name: '아기',
-        birthDate: '2025-03-01',
-        dueDate: null,
-        gender: 'female',
-        relationship: 'dad',
-        nickname: '아빠',
-      )).thenAnswer((_) async => 'baby-456');
+      when(
+        mockRepository.createBaby(
+          name: '아기',
+          birthDate: '2025-03-01',
+          dueDate: null,
+          gender: 'female',
+          relationship: 'father',
+          nickname: '아빠',
+        ),
+      ).thenAnswer((_) async => 'baby-456');
 
       // when
       await viewModel.submit();
@@ -180,23 +185,25 @@ void main() {
     test('sets error when createBaby throws', () async {
       // given
       final viewModel = createViewModel();
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
 
-      when(mockRepository.createBaby(
-        name: '아기',
-        birthDate: '2025-01-01',
-        dueDate: null,
-        gender: 'male',
-        relationship: 'mom',
-        nickname: '엄마',
-      )).thenThrow(Exception('서버 오류'));
+      when(
+        mockRepository.createBaby(
+          name: '아기',
+          birthDate: '2025-01-01',
+          dueDate: null,
+          gender: 'male',
+          relationship: 'mother',
+          nickname: '엄마',
+        ),
+      ).thenThrow(Exception('서버 오류'));
 
       // when
       await viewModel.submit();
 
       // then
-      expect(viewModel.error, '오류가 발생했습니다. 다시 시도해주세요.');
+      expect(viewModel.error, '오류가 발생했습니다.');
       expect(viewModel.babyId, isNull);
       expect(viewModel.isLoading, isFalse);
     });
@@ -210,11 +217,13 @@ void main() {
       viewModel.setRelationship(Relationship.family);
       viewModel.setNickname('할머니');
 
-      when(mockRepository.joinBabyByInviteCode(
-        code: 'ABC-123',
-        relationship: 'family',
-        nickname: '할머니',
-      )).thenAnswer((_) async => 'baby-789');
+      when(
+        mockRepository.joinBabyByInviteCode(
+          code: 'ABC-123',
+          relationship: 'family',
+          nickname: '할머니',
+        ),
+      ).thenAnswer((_) async => 'baby-789');
 
       // when
       await viewModel.submit();
@@ -229,20 +238,22 @@ void main() {
       // given
       final flow = JoinBabyFlow(inviteCode: 'ABC-123');
       final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.dad);
+      viewModel.setRelationship(Relationship.father);
       viewModel.setNickname('아빠');
 
-      when(mockRepository.joinBabyByInviteCode(
-        code: 'ABC-123',
-        relationship: 'dad',
-        nickname: '아빠',
-      )).thenThrow(Exception('서버 오류'));
+      when(
+        mockRepository.joinBabyByInviteCode(
+          code: 'ABC-123',
+          relationship: 'father',
+          nickname: '아빠',
+        ),
+      ).thenThrow(Exception('서버 오류'));
 
       // when
       await viewModel.submit();
 
       // then
-      expect(viewModel.error, '오류가 발생했습니다. 다시 시도해주세요.');
+      expect(viewModel.error, '오류가 발생했습니다.');
       expect(viewModel.babyId, isNull);
       expect(viewModel.isLoading, isFalse);
     });
@@ -252,17 +263,19 @@ void main() {
     test('notifies listeners with loading state changes', () async {
       // given
       final viewModel = createViewModel();
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
 
-      when(mockRepository.createBaby(
-        name: '아기',
-        birthDate: '2025-01-01',
-        dueDate: null,
-        gender: 'male',
-        relationship: 'mom',
-        nickname: '엄마',
-      )).thenAnswer((_) async => 'baby-123');
+      when(
+        mockRepository.createBaby(
+          name: '아기',
+          birthDate: '2025-01-01',
+          dueDate: null,
+          gender: 'male',
+          relationship: 'mother',
+          nickname: '엄마',
+        ),
+      ).thenAnswer((_) async => 'baby-123');
 
       final loadingStates = <bool>[];
       viewModel.addListener(() {
@@ -279,19 +292,21 @@ void main() {
     test('isValid returns false while loading', () async {
       // given
       final viewModel = createViewModel();
-      viewModel.setRelationship(Relationship.mom);
+      viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
       expect(viewModel.isValid, isTrue);
 
       final completer = Completer<String>();
-      when(mockRepository.createBaby(
-        name: '아기',
-        birthDate: '2025-01-01',
-        dueDate: null,
-        gender: 'male',
-        relationship: 'mom',
-        nickname: '엄마',
-      )).thenAnswer((_) => completer.future);
+      when(
+        mockRepository.createBaby(
+          name: '아기',
+          birthDate: '2025-01-01',
+          dueDate: null,
+          gender: 'male',
+          relationship: 'mother',
+          nickname: '엄마',
+        ),
+      ).thenAnswer((_) => completer.future);
 
       // when
       final future = viewModel.submit();
