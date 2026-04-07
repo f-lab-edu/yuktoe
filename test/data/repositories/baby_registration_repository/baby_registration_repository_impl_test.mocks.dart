@@ -43,8 +43,6 @@ class MockBabyRegistrationService extends _i1.Mock
     String? birthDate,
     String? dueDate,
     required String? gender,
-    required String? relationship,
-    required String? nickname,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#createBaby, [], {
@@ -52,8 +50,6 @@ class MockBabyRegistrationService extends _i1.Mock
               #birthDate: birthDate,
               #dueDate: dueDate,
               #gender: gender,
-              #relationship: relationship,
-              #nickname: nickname,
             }),
             returnValue: _i3.Future<_i4.Result<String>>.value(
               _i5.dummyValue<_i4.Result<String>>(
@@ -63,8 +59,6 @@ class MockBabyRegistrationService extends _i1.Mock
                   #birthDate: birthDate,
                   #dueDate: dueDate,
                   #gender: gender,
-                  #relationship: relationship,
-                  #nickname: nickname,
                 }),
               ),
             ),
@@ -87,25 +81,40 @@ class MockBabyRegistrationService extends _i1.Mock
   @override
   _i3.Future<_i4.Result<String>> joinBabyByInviteCode({
     required String? code,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#joinBabyByInviteCode, [], {#code: code}),
+            returnValue: _i3.Future<_i4.Result<String>>.value(
+              _i5.dummyValue<_i4.Result<String>>(
+                this,
+                Invocation.method(#joinBabyByInviteCode, [], {#code: code}),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<String>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> setupUserProfile({
+    required String? babyId,
     required String? relationship,
     required String? nickname,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#joinBabyByInviteCode, [], {
-              #code: code,
+            Invocation.method(#setupUserProfile, [], {
+              #babyId: babyId,
               #relationship: relationship,
               #nickname: nickname,
             }),
-            returnValue: _i3.Future<_i4.Result<String>>.value(
-              _i5.dummyValue<_i4.Result<String>>(
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i5.dummyValue<_i4.Result<void>>(
                 this,
-                Invocation.method(#joinBabyByInviteCode, [], {
-                  #code: code,
+                Invocation.method(#setupUserProfile, [], {
+                  #babyId: babyId,
                   #relationship: relationship,
                   #nickname: nickname,
                 }),
               ),
             ),
           )
-          as _i3.Future<_i4.Result<String>>);
+          as _i3.Future<_i4.Result<void>>);
 }

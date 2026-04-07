@@ -7,14 +7,14 @@ abstract interface class BabyRegistrationService {
     String? birthDate,
     String? dueDate,
     required String gender,
-    required String relationship,
-    required String nickname,
   });
 
   Future<Result<BabyPreview?>> verifyInviteCode(String code);
 
-  Future<Result<String>> joinBabyByInviteCode({
-    required String code,
+  Future<Result<String>> joinBabyByInviteCode({required String code});
+
+  Future<Result<void>> setupUserProfile({
+    required String babyId,
     required String relationship,
     required String nickname,
   });

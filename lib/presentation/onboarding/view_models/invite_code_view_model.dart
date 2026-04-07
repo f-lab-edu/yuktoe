@@ -15,12 +15,14 @@ class InviteCodeViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   BabyPreview? _verifiedBaby;
+  String? _babyId;
 
   String get code => _code;
   bool get agreedToTerms => _agreedToTerms;
   bool get isLoading => _isLoading;
   String? get error => _error;
   BabyPreview? get verifiedBaby => _verifiedBaby;
+  String? get babyId => _babyId;
 
   bool get isValid => _code.trim().isNotEmpty && _agreedToTerms && !_isLoading;
 
@@ -63,6 +65,22 @@ class InviteCodeViewModel extends ChangeNotifier {
     final year = _verifiedBaby?.birthYear;
     if (year == null) return null;
     return '$year년생';
+  }
+
+  Future<void> joinBaby() async {
+    _isLoading = true;
+    _error = null;
+    _babyId = null;
+    notifyListeners();
+
+    try {
+      _babyId = await _repository.joinBabyByInviteCode(code: _code);
+    } catch (_) {
+      _error = AppStrings.genericError;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void clearVerifiedBaby() {

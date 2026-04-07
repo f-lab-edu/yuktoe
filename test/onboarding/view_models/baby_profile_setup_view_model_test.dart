@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
-import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 
 import 'baby_profile_setup_view_model_test.mocks.dart';
@@ -19,15 +17,9 @@ void main() {
     mockRepository = MockBabyRegistrationRepository();
   });
 
-  BabyProfileSetupViewModel createViewModel({OnboardingFlow? flow}) {
+  BabyProfileSetupViewModel createViewModel({String babyId = 'test-baby-id'}) {
     return BabyProfileSetupViewModel(
-      flow:
-          flow ??
-          CreateBabyFlow(
-            name: '아기',
-            gender: Gender.male,
-            birthDate: DateTime(2025, 1, 1),
-          ),
+      babyId: babyId,
       repository: mockRepository,
     );
   }
@@ -40,6 +32,7 @@ void main() {
       expect(viewModel.nickname, '');
       expect(viewModel.isLoading, isFalse);
       expect(viewModel.error, isNull);
+      expect(viewModel.isSuccess, isFalse);
       expect(viewModel.isValid, isFalse);
     });
   });
@@ -120,202 +113,91 @@ void main() {
     });
   });
 
-  group('submit with CreateBabyFlow', () {
-    test('calls createBaby and returns babyId on success', () async {
-      // given
-      final flow = CreateBabyFlow(
-        name: '아기',
-        gender: Gender.male,
-        birthDate: DateTime(2025, 1, 15),
-        dueDate: DateTime(2025, 2, 1),
-      );
-      final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.mother);
-      viewModel.setNickname('엄마');
-
-      when(
-        mockRepository.createBaby(
-          name: '아기',
-          birthDate: '2025-01-15',
-          dueDate: '2025-02-01',
-          gender: 'male',
-          relationship: 'mother',
-          nickname: '엄마',
-        ),
-      ).thenAnswer((_) async => 'baby-123');
-
-      // when
-      await viewModel.submit();
-
-      // then
-      expect(viewModel.babyId, 'baby-123');
-      expect(viewModel.isLoading, isFalse);
-      expect(viewModel.error, isNull);
-    });
-
-    test('calls createBaby with null dueDate when not provided', () async {
-      // given
-      final flow = CreateBabyFlow(
-        name: '아기',
-        gender: Gender.female,
-        birthDate: DateTime(2025, 3, 1),
-      );
-      final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.father);
-      viewModel.setNickname('아빠');
-
-      when(
-        mockRepository.createBaby(
-          name: '아기',
-          birthDate: '2025-03-01',
-          dueDate: null,
-          gender: 'female',
-          relationship: 'father',
-          nickname: '아빠',
-        ),
-      ).thenAnswer((_) async => 'baby-456');
-
-      // when
-      await viewModel.submit();
-
-      // then
-      expect(viewModel.babyId, 'baby-456');
-    });
-
-    test('sets error when createBaby throws', () async {
-      // given
+  group('submit', () {
+    test('calls setupUserProfile and sets isSuccess on success', () async {
       final viewModel = createViewModel();
       viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
 
       when(
-        mockRepository.createBaby(
-          name: '아기',
-          birthDate: '2025-01-01',
-          dueDate: null,
-          gender: 'male',
+        mockRepository.setupUserProfile(
+          babyId: 'test-baby-id',
+          relationship: 'mother',
+          nickname: '엄마',
+        ),
+      ).thenAnswer((_) async {});
+
+      await viewModel.submit();
+
+      expect(viewModel.isSuccess, isTrue);
+      expect(viewModel.error, isNull);
+      expect(viewModel.isLoading, isFalse);
+    });
+
+    test('sets error when setupUserProfile throws', () async {
+      final viewModel = createViewModel();
+      viewModel.setRelationship(Relationship.mother);
+      viewModel.setNickname('엄마');
+
+      when(
+        mockRepository.setupUserProfile(
+          babyId: 'test-baby-id',
           relationship: 'mother',
           nickname: '엄마',
         ),
       ).thenThrow(Exception('서버 오류'));
 
-      // when
       await viewModel.submit();
 
-      // then
       expect(viewModel.error, '오류가 발생했습니다.');
-      expect(viewModel.babyId, isNull);
+      expect(viewModel.isSuccess, isFalse);
       expect(viewModel.isLoading, isFalse);
     });
-  });
 
-  group('submit with JoinBabyFlow', () {
-    test('calls joinBabyByInviteCode and returns babyId on success', () async {
-      // given
-      final flow = JoinBabyFlow(inviteCode: 'ABC-123');
-      final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.family);
-      viewModel.setNickname('할머니');
-
-      when(
-        mockRepository.joinBabyByInviteCode(
-          code: 'ABC-123',
-          relationship: 'family',
-          nickname: '할머니',
-        ),
-      ).thenAnswer((_) async => 'baby-789');
-
-      // when
-      await viewModel.submit();
-
-      // then
-      expect(viewModel.babyId, 'baby-789');
-      expect(viewModel.isLoading, isFalse);
-      expect(viewModel.error, isNull);
-    });
-
-    test('sets error when joinBabyByInviteCode throws', () async {
-      // given
-      final flow = JoinBabyFlow(inviteCode: 'ABC-123');
-      final viewModel = createViewModel(flow: flow);
-      viewModel.setRelationship(Relationship.father);
-      viewModel.setNickname('아빠');
-
-      when(
-        mockRepository.joinBabyByInviteCode(
-          code: 'ABC-123',
-          relationship: 'father',
-          nickname: '아빠',
-        ),
-      ).thenThrow(Exception('서버 오류'));
-
-      // when
-      await viewModel.submit();
-
-      // then
-      expect(viewModel.error, '오류가 발생했습니다.');
-      expect(viewModel.babyId, isNull);
-      expect(viewModel.isLoading, isFalse);
-    });
-  });
-
-  group('submit loading state', () {
     test('notifies listeners with loading state changes', () async {
-      // given
       final viewModel = createViewModel();
       viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
 
       when(
-        mockRepository.createBaby(
-          name: '아기',
-          birthDate: '2025-01-01',
-          dueDate: null,
-          gender: 'male',
+        mockRepository.setupUserProfile(
+          babyId: 'test-baby-id',
           relationship: 'mother',
           nickname: '엄마',
         ),
-      ).thenAnswer((_) async => 'baby-123');
+      ).thenAnswer((_) async {});
 
       final loadingStates = <bool>[];
       viewModel.addListener(() {
         loadingStates.add(viewModel.isLoading);
       });
 
-      // when
       await viewModel.submit();
 
-      // then - loading true -> loading false
       expect(loadingStates, [true, false]);
     });
 
     test('isValid returns false while loading', () async {
-      // given
       final viewModel = createViewModel();
       viewModel.setRelationship(Relationship.mother);
       viewModel.setNickname('엄마');
       expect(viewModel.isValid, isTrue);
 
-      final completer = Completer<String>();
+      final completer = Completer<void>();
       when(
-        mockRepository.createBaby(
-          name: '아기',
-          birthDate: '2025-01-01',
-          dueDate: null,
-          gender: 'male',
+        mockRepository.setupUserProfile(
+          babyId: 'test-baby-id',
           relationship: 'mother',
           nickname: '엄마',
         ),
       ).thenAnswer((_) => completer.future);
 
-      // when
       final future = viewModel.submit();
 
-      // then
       expect(viewModel.isLoading, isTrue);
       expect(viewModel.isValid, isFalse);
 
-      completer.complete('baby-123');
+      completer.complete();
       await future;
     });
   });

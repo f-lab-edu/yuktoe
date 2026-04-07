@@ -2,16 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
-import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 
 class BabyProfileSetupViewModel extends ChangeNotifier {
   static const nicknameMaxLength = 20;
 
-  final OnboardingFlow flow;
+  final String babyId;
   final BabyRegistrationRepository _repository;
 
   BabyProfileSetupViewModel({
-    required this.flow,
+    required this.babyId,
     required BabyRegistrationRepository repository,
   }) : _repository = repository;
 
@@ -19,13 +18,13 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
   String _nickname = '';
   bool _isLoading = false;
   String? _error;
-  String? _babyId;
+  bool _isSuccess = false;
 
   Relationship? get relationship => _relationship;
   String get nickname => _nickname;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  String? get babyId => _babyId;
+  bool get isSuccess => _isSuccess;
 
   bool get isValid =>
       _relationship != null && _nickname.trim().isNotEmpty && !_isLoading;
@@ -45,32 +44,16 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
   Future<void> submit() async {
     _isLoading = true;
     _error = null;
-    _babyId = null;
+    _isSuccess = false;
     notifyListeners();
 
     try {
-      _babyId = switch (flow) {
-        CreateBabyFlow(
-          :final name,
-          :final gender,
-          :final birthDate,
-          :final dueDate,
-        ) =>
-          await _repository.createBaby(
-            name: name,
-            birthDate: _formatDate(birthDate),
-            dueDate: dueDate != null ? _formatDate(dueDate) : null,
-            gender: gender.serverValue,
-            relationship: _relationship!.serverValue,
-            nickname: _nickname.trim(),
-          ),
-        JoinBabyFlow(:final inviteCode) =>
-          await _repository.joinBabyByInviteCode(
-            code: inviteCode,
-            relationship: _relationship!.serverValue,
-            nickname: _nickname.trim(),
-          ),
-      };
+      await _repository.setupUserProfile(
+        babyId: babyId,
+        relationship: _relationship!.serverValue,
+        nickname: _nickname.trim(),
+      );
+      _isSuccess = true;
     } catch (e) {
       _error = AppStrings.genericError;
     } finally {
@@ -78,7 +61,4 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 }

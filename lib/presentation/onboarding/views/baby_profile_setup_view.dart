@@ -23,6 +23,11 @@ class BabyProfileSetupView extends StatelessWidget {
     await viewModel.submit();
     if (!context.mounted) return;
 
+    if (viewModel.isSuccess) {
+      context.go(AppRoutes.home);
+      return;
+    }
+
     if (viewModel.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -30,10 +35,7 @@ class BabyProfileSetupView extends StatelessWidget {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
     }
-
-    context.go(AppRoutes.home);
   }
 
   @override

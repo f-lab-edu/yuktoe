@@ -14,16 +14,12 @@ class BabyRegistrationRepositoryImpl implements BabyRegistrationRepository {
     String? birthDate,
     String? dueDate,
     required String gender,
-    required String relationship,
-    required String nickname,
   }) async {
     final result = await _service.createBaby(
       name: name,
       birthDate: birthDate,
       dueDate: dueDate,
       gender: gender,
-      relationship: relationship,
-      nickname: nickname,
     );
 
     switch (result) {
@@ -47,21 +43,33 @@ class BabyRegistrationRepositoryImpl implements BabyRegistrationRepository {
   }
 
   @override
-  Future<String> joinBabyByInviteCode({
-    required String code,
-    required String relationship,
-    required String nickname,
-  }) async {
-    final result = await _service.joinBabyByInviteCode(
-      code: code,
-      relationship: relationship,
-      nickname: nickname,
-    );
+  Future<String> joinBabyByInviteCode({required String code}) async {
+    final result = await _service.joinBabyByInviteCode(code: code);
 
     switch (result) {
       case Ok<String>():
         return result.value;
       case Error<String>():
+        throw result.error;
+    }
+  }
+
+  @override
+  Future<void> setupUserProfile({
+    required String babyId,
+    required String relationship,
+    required String nickname,
+  }) async {
+    final result = await _service.setupUserProfile(
+      babyId: babyId,
+      relationship: relationship,
+      nickname: nickname,
+    );
+
+    switch (result) {
+      case Ok<void>():
+        return;
+      case Error<void>():
         throw result.error;
     }
   }

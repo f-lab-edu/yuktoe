@@ -18,6 +18,7 @@ void main() {
   setUpAll(() {
     provideDummy<Result<String>>(Result.ok(''));
     provideDummy<Result<BabyPreview?>>(Result.ok(null));
+    provideDummy<Result<void>>(Result.ok(null));
   });
 
   setUp(() {
@@ -29,53 +30,38 @@ void main() {
     const name = '아기';
     const birthDate = '2025-01-01';
     const gender = 'male';
-    const relationship = 'mom';
-    const nickname = '엄마';
 
     test('returns babyId when service returns Ok', () async {
-      // given
       when(mockService.createBaby(
         name: name,
         birthDate: birthDate,
         dueDate: null,
         gender: gender,
-        relationship: relationship,
-        nickname: nickname,
       )).thenAnswer((_) async => Result.ok('baby-123'));
 
-      // when
       final result = await repository.createBaby(
         name: name,
         birthDate: birthDate,
         gender: gender,
-        relationship: relationship,
-        nickname: nickname,
       );
 
-      // then
       expect(result, 'baby-123');
     });
 
     test('throws when service returns Error', () async {
-      // given
       final exception = AppException(ErrorCode.unknown, 'create failed');
       when(mockService.createBaby(
         name: name,
         birthDate: birthDate,
         dueDate: null,
         gender: gender,
-        relationship: relationship,
-        nickname: nickname,
       )).thenAnswer((_) async => Result.error(exception));
 
-      // when & then
       expect(
         () => repository.createBaby(
           name: name,
           birthDate: birthDate,
           gender: gender,
-          relationship: relationship,
-          nickname: nickname,
         ),
         throwsA(same(exception)),
       );
@@ -86,7 +72,6 @@ void main() {
     const code = 'ABC-123';
 
     test('returns BabyPreview when service returns Ok with data', () async {
-      // given
       final baby = BabyPreview(
         maskedName: '김*수',
         birthYear: 2025,
@@ -95,32 +80,25 @@ void main() {
       when(mockService.verifyInviteCode(code))
           .thenAnswer((_) async => Result.ok(baby));
 
-      // when
       final result = await repository.verifyInviteCode(code);
 
-      // then
       expect(result, same(baby));
     });
 
     test('returns null when service returns Ok(null)', () async {
-      // given
       when(mockService.verifyInviteCode(code))
           .thenAnswer((_) async => Result.ok(null));
 
-      // when
       final result = await repository.verifyInviteCode(code);
 
-      // then
       expect(result, isNull);
     });
 
     test('throws when service returns Error', () async {
-      // given
       final exception = AppException(ErrorCode.unknown, 'verify failed');
       when(mockService.verifyInviteCode(code))
           .thenAnswer((_) async => Result.error(exception));
 
-      // when & then
       expect(
         () => repository.verifyInviteCode(code),
         throwsA(same(exception)),
@@ -130,41 +108,64 @@ void main() {
 
   group('joinBabyByInviteCode', () {
     const code = 'ABC-123';
-    const relationship = 'dad';
-    const nickname = '아빠';
 
     test('returns babyId when service returns Ok', () async {
-      // given
-      when(mockService.joinBabyByInviteCode(
-        code: code,
-        relationship: relationship,
-        nickname: nickname,
-      )).thenAnswer((_) async => Result.ok('baby-456'));
+      when(mockService.joinBabyByInviteCode(code: code))
+          .thenAnswer((_) async => Result.ok('baby-456'));
 
-      // when
-      final result = await repository.joinBabyByInviteCode(
-        code: code,
-        relationship: relationship,
-        nickname: nickname,
-      );
+      final result = await repository.joinBabyByInviteCode(code: code);
 
-      // then
       expect(result, 'baby-456');
     });
 
     test('throws when service returns Error', () async {
-      // given
       final exception = AppException(ErrorCode.unknown, 'join failed');
-      when(mockService.joinBabyByInviteCode(
-        code: code,
+      when(mockService.joinBabyByInviteCode(code: code))
+          .thenAnswer((_) async => Result.error(exception));
+
+      expect(
+        () => repository.joinBabyByInviteCode(code: code),
+        throwsA(same(exception)),
+      );
+    });
+  });
+
+  group('setupUserProfile', () {
+    const babyId = 'baby-123';
+    const relationship = 'mother';
+    const nickname = '엄마';
+
+    test('completes when service returns Ok', () async {
+      when(mockService.setupUserProfile(
+        babyId: babyId,
+        relationship: relationship,
+        nickname: nickname,
+      )).thenAnswer((_) async => Result.ok(null));
+
+      await repository.setupUserProfile(
+        babyId: babyId,
+        relationship: relationship,
+        nickname: nickname,
+      );
+
+      verify(mockService.setupUserProfile(
+        babyId: babyId,
+        relationship: relationship,
+        nickname: nickname,
+      )).called(1);
+    });
+
+    test('throws when service returns Error', () async {
+      final exception = AppException(ErrorCode.unknown, 'setup failed');
+      when(mockService.setupUserProfile(
+        babyId: babyId,
         relationship: relationship,
         nickname: nickname,
       )).thenAnswer((_) async => Result.error(exception));
 
-      // when & then
       expect(
-        () => repository.joinBabyByInviteCode(
-          code: code,
+        () => repository.setupUserProfile(
+          babyId: babyId,
           relationship: relationship,
           nickname: nickname,
         ),

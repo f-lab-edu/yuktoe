@@ -6,7 +6,6 @@ import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
-import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_registration_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
 
@@ -79,15 +78,22 @@ class BabyRegistrationView extends StatelessWidget {
           ),
           _SubmitButton(
             isEnabled: viewModel.isValid,
-            onPressed: () {
+            isLoading: viewModel.isLoading,
+            onPressed: () async {
+              await viewModel.submit();
+              if (!context.mounted) return;
+              if (viewModel.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(viewModel.error!),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                return;
+              }
               context.push(
                 AppRoutes.babyProfileSetup,
-                extra: CreateBabyFlow(
-                  name: viewModel.name,
-                  gender: viewModel.gender!,
-                  birthDate: viewModel.birthDate!,
-                  dueDate: viewModel.dueDate,
-                ),
+                extra: viewModel.babyId,
               );
             },
           ),
@@ -369,9 +375,14 @@ class _TermsCheckbox extends StatelessWidget {
 
 class _SubmitButton extends StatelessWidget {
   final bool isEnabled;
+  final bool isLoading;
   final VoidCallback onPressed;
 
-  const _SubmitButton({required this.isEnabled, required this.onPressed});
+  const _SubmitButton({
+    required this.isEnabled,
+    this.isLoading = false,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -404,12 +415,21 @@ class _SubmitButton extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Text(
-                AppStrings.next,
-                style: AppTextStyles.body.bold.copyWith(
-                  color: AppColors.textOnDark,
-                ),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: AppColors.textOnDark,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Text(
+                      AppStrings.next,
+                      style: AppTextStyles.body.bold.copyWith(
+                        color: AppColors.textOnDark,
+                      ),
+                    ),
             ),
           ),
         ),

@@ -2,7 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
-import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
 import 'package:yuktoe/presentation/auth/login/views/login_view.dart';
 import 'package:yuktoe/presentation/home/home_screen.dart';
@@ -48,17 +47,19 @@ final router = GoRouter(
         GoRoute(
           path: AppRoutes._babyRegistration,
           builder: (context, state) => ChangeNotifierProvider(
-            create: (_) => BabyRegistrationViewModel(),
+            create: (context) => BabyRegistrationViewModel(
+              repository: context.read<BabyRegistrationRepository>(),
+            ),
             child: const BabyRegistrationView(),
           ),
         ),
         GoRoute(
           path: AppRoutes._babyProfileSetup,
           builder: (context, state) {
-            final flow = state.extra! as OnboardingFlow;
+            final babyId = state.extra! as String;
             return ChangeNotifierProvider(
               create: (context) => BabyProfileSetupViewModel(
-                flow: flow,
+                babyId: babyId,
                 repository: context.read<BabyRegistrationRepository>(),
               ),
               child: const BabyProfileSetupView(),

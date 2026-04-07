@@ -17,32 +17,28 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
     String? birthDate,
     String? dueDate,
     required String gender,
-    required String relationship,
-    required String nickname,
   }) async {
     try {
       final result = await _client.rpc(
-        'create_baby_with_owner',
+        'create_baby',
         params: {
           'p_name': name,
           'p_birth_date': birthDate,
           'p_due_date': dueDate,
           'p_gender': gender,
-          'p_relationship': relationship,
-          'p_nickname': nickname,
         },
       );
 
       if (result == null) {
         return Result.error(
-          AppException(ErrorCode.invalidResponse, 'create_baby_with_owner returned null'),
+          AppException(ErrorCode.invalidResponse, 'create_baby returned null'),
         );
       }
 
       return Result.ok(result.toString());
     } on Exception catch (e) {
       return Result.error(
-        AppException(ErrorCode.unknown, 'create_baby_with_owner failed', cause: e),
+        AppException(ErrorCode.unknown, 'create_baby failed', cause: e),
       );
     }
   }
@@ -81,19 +77,11 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
   }
 
   @override
-  Future<Result<String>> joinBabyByInviteCode({
-    required String code,
-    required String relationship,
-    required String nickname,
-  }) async {
+  Future<Result<String>> joinBabyByInviteCode({required String code}) async {
     try {
       final result = await _client.rpc(
         'join_baby_by_invite_code',
-        params: {
-          'p_code': code,
-          'p_relationship': relationship,
-          'p_nickname': nickname,
-        },
+        params: {'p_code': code},
       );
 
       if (result == null) {
@@ -106,6 +94,30 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
     } on Exception catch (e) {
       return Result.error(
         AppException(ErrorCode.unknown, 'join_baby_by_invite_code failed', cause: e),
+      );
+    }
+  }
+
+  @override
+  Future<Result<void>> setupUserProfile({
+    required String babyId,
+    required String relationship,
+    required String nickname,
+  }) async {
+    try {
+      await _client.rpc(
+        'setup_user_profile',
+        params: {
+          'p_baby_id': babyId,
+          'p_relationship': relationship,
+          'p_nickname': nickname,
+        },
+      );
+
+      return Result.ok(null);
+    } on Exception catch (e) {
+      return Result.error(
+        AppException(ErrorCode.unknown, 'setup_user_profile failed', cause: e),
       );
     }
   }

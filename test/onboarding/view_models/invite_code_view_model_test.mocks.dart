@@ -42,8 +42,6 @@ class MockBabyRegistrationRepository extends _i1.Mock
     String? birthDate,
     String? dueDate,
     required String? gender,
-    required String? relationship,
-    required String? nickname,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#createBaby, [], {
@@ -51,8 +49,6 @@ class MockBabyRegistrationRepository extends _i1.Mock
               #birthDate: birthDate,
               #dueDate: dueDate,
               #gender: gender,
-              #relationship: relationship,
-              #nickname: nickname,
             }),
             returnValue: _i3.Future<String>.value(
               _i4.dummyValue<String>(
@@ -62,8 +58,6 @@ class MockBabyRegistrationRepository extends _i1.Mock
                   #birthDate: birthDate,
                   #dueDate: dueDate,
                   #gender: gender,
-                  #relationship: relationship,
-                  #nickname: nickname,
                 }),
               ),
             ),
@@ -79,27 +73,32 @@ class MockBabyRegistrationRepository extends _i1.Mock
           as _i3.Future<_i5.BabyPreview?>);
 
   @override
-  _i3.Future<String> joinBabyByInviteCode({
-    required String? code,
-    required String? relationship,
-    required String? nickname,
-  }) =>
+  _i3.Future<String> joinBabyByInviteCode({required String? code}) =>
       (super.noSuchMethod(
-            Invocation.method(#joinBabyByInviteCode, [], {
-              #code: code,
-              #relationship: relationship,
-              #nickname: nickname,
-            }),
+            Invocation.method(#joinBabyByInviteCode, [], {#code: code}),
             returnValue: _i3.Future<String>.value(
               _i4.dummyValue<String>(
                 this,
-                Invocation.method(#joinBabyByInviteCode, [], {
-                  #code: code,
-                  #relationship: relationship,
-                  #nickname: nickname,
-                }),
+                Invocation.method(#joinBabyByInviteCode, [], {#code: code}),
               ),
             ),
           )
           as _i3.Future<String>);
+
+  @override
+  _i3.Future<void> setupUserProfile({
+    required String? babyId,
+    required String? relationship,
+    required String? nickname,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#setupUserProfile, [], {
+              #babyId: babyId,
+              #relationship: relationship,
+              #nickname: nickname,
+            }),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

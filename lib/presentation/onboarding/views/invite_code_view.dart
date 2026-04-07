@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/constants/app_strings.dart';
-import 'package:yuktoe/domain/models/baby_registration/onboarding_flow.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
 
@@ -229,13 +228,23 @@ class InviteCodeView extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {
-                      final code =
-                          context.read<InviteCodeViewModel>().code;
+                    onTap: () async {
                       Navigator.of(sheetContext).pop();
+                      final vm = context.read<InviteCodeViewModel>();
+                      await vm.joinBaby();
+                      if (!context.mounted) return;
+                      if (vm.error != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(vm.error!),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return;
+                      }
                       context.push(
                         AppRoutes.babyProfileSetup,
-                        extra: JoinBabyFlow(inviteCode: code),
+                        extra: vm.babyId,
                       );
                     },
                     child: Container(
