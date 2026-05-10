@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
@@ -14,7 +15,7 @@ class BabyRegistrationViewModel extends ChangeNotifier {
   DateTime? _birthDate;
   DateTime? _dueDate;
   bool _agreedToTerms = false;
-  bool _isLoading = false;
+  ActionState _state = ActionState.idle;
   String? _error;
   String? _babyId;
 
@@ -23,7 +24,8 @@ class BabyRegistrationViewModel extends ChangeNotifier {
   DateTime? get birthDate => _birthDate;
   DateTime? get dueDate => _dueDate;
   bool get agreedToTerms => _agreedToTerms;
-  bool get isLoading => _isLoading;
+  ActionState get state => _state;
+  bool get isLoading => _state == ActionState.loading;
   String? get error => _error;
   String? get babyId => _babyId;
 
@@ -32,25 +34,33 @@ class BabyRegistrationViewModel extends ChangeNotifier {
       _gender != null &&
       _birthDate != null &&
       _agreedToTerms &&
-      !_isLoading;
+      !isLoading;
 
   void setName(String value) {
     _name = value;
+    if (_state == ActionState.error) _state = ActionState.idle;
+    _error = null;
     notifyListeners();
   }
 
   void setGender(Gender value) {
     _gender = value;
+    if (_state == ActionState.error) _state = ActionState.idle;
+    _error = null;
     notifyListeners();
   }
 
   void setBirthDate(DateTime value) {
     _birthDate = value;
+    if (_state == ActionState.error) _state = ActionState.idle;
+    _error = null;
     notifyListeners();
   }
 
   void setDueDate(DateTime? value) {
     _dueDate = value;
+    if (_state == ActionState.error) _state = ActionState.idle;
+    _error = null;
     notifyListeners();
   }
 
@@ -60,7 +70,7 @@ class BabyRegistrationViewModel extends ChangeNotifier {
   }
 
   Future<void> submit() async {
-    _isLoading = true;
+    _state = ActionState.loading;
     _error = null;
     _babyId = null;
     notifyListeners();
@@ -72,12 +82,19 @@ class BabyRegistrationViewModel extends ChangeNotifier {
         dueDate: _dueDate != null ? _formatDate(_dueDate!) : null,
         gender: _gender!.serverValue,
       );
+      _state = ActionState.success;
     } catch (e) {
+      _state = ActionState.error;
       _error = AppStrings.genericError;
     } finally {
-      _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void resetState() {
+    _state = ActionState.idle;
+    _babyId = null;
+    _error = null;
   }
 
   String _formatDate(DateTime date) =>

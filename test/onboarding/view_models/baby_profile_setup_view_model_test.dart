@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 
@@ -32,7 +33,7 @@ void main() {
       expect(viewModel.nickname, '');
       expect(viewModel.isLoading, isFalse);
       expect(viewModel.error, isNull);
-      expect(viewModel.isSuccess, isFalse);
+      expect(viewModel.state, ActionState.idle);
       expect(viewModel.isValid, isFalse);
     });
   });
@@ -129,7 +130,7 @@ void main() {
 
       await viewModel.submit();
 
-      expect(viewModel.isSuccess, isTrue);
+      expect(viewModel.state, ActionState.success);
       expect(viewModel.error, isNull);
       expect(viewModel.isLoading, isFalse);
     });
@@ -150,7 +151,7 @@ void main() {
       await viewModel.submit();
 
       expect(viewModel.error, '오류가 발생했습니다.');
-      expect(viewModel.isSuccess, isFalse);
+      expect(viewModel.state, ActionState.error);
       expect(viewModel.isLoading, isFalse);
     });
 

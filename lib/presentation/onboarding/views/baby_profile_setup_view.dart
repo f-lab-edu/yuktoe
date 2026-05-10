@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_profile_setup_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
@@ -11,29 +12,30 @@ class BabyProfileSetupView extends StatelessWidget {
   const BabyProfileSetupView({super.key});
 
 
-  Future<void> _onSubmit(BuildContext context) async {
-    final viewModel = context.read<BabyProfileSetupViewModel>();
-    await viewModel.submit();
-    if (!context.mounted) return;
-
-    if (viewModel.isSuccess) {
-      context.go(AppRoutes.home);
-      return;
-    }
-
-    if (viewModel.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(viewModel.error!),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  void _handleSideEffects(BuildContext context, BabyProfileSetupViewModel viewModel) {
+    switch (viewModel.state) {
+      case ActionState.success:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.go(AppRoutes.home);
+        });
+      case ActionState.error when viewModel.error != null:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.error!),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        });
+      default:
+        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<BabyProfileSetupViewModel>();
+    _handleSideEffects(context, viewModel);
 
     return Scaffold(
       body: Column(
@@ -252,7 +254,7 @@ class BabyProfileSetupView extends StatelessWidget {
         MediaQuery.of(context).padding.bottom + 24,
       ),
       child: GestureDetector(
-        onTap: isEnabled ? () => _onSubmit(context) : null,
+        onTap: isEnabled ? () => viewModel.submit() : null,
         child: AnimatedOpacity(
           opacity: isEnabled ? 1.0 : 0.5,
           duration: const Duration(milliseconds: 200),

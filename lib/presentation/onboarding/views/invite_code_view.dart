@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/invite_code_view_model.dart';
 import 'package:yuktoe/routing/router.dart';
@@ -10,22 +11,47 @@ import 'package:yuktoe/routing/router.dart';
 class InviteCodeView extends StatelessWidget {
   const InviteCodeView({super.key});
 
-  void _onViewModelChanged(BuildContext context) {
-    final viewModel = context.read<InviteCodeViewModel>();
+  void _handleSideEffects(BuildContext context, InviteCodeViewModel viewModel) {
+    if (viewModel.state == ActionState.success && viewModel.babyId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.push(
+          AppRoutes.babyProfileSetup,
+          extra: viewModel.babyId,
+        );
+        viewModel.resetState();
+      });
+      return;
+    }
 
-    final name = viewModel.babyName;
-    final genderText = viewModel.babyGenderText;
-    final birthYear = viewModel.babyBirthYear;
+    if (viewModel.shouldShowConfirmModal) {
+      final name = viewModel.babyName!;
+      final genderText = viewModel.babyGenderText!;
+      final birthYear = viewModel.babyBirthYear!;
+      viewModel.onConfirmModalShown();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showBabyConfirmModal(
+          context,
+          name: name,
+          genderText: genderText,
+          birthYear: birthYear,
+        );
+      });
+      return;
+    }
 
-    if (name != null && genderText != null && birthYear != null) {
-      _showBabyConfirmModal(
-        context,
-        name: name,
-        genderText: genderText,
-        birthYear: birthYear,
-      );
-    } else if (viewModel.error != null) {
-      _showNotFoundAlert(context);
+    if (viewModel.state == ActionState.error && viewModel.error != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (viewModel.verifiedBaby != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.error!),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          _showNotFoundAlert(context);
+        }
+      });
     }
   }
 
@@ -228,24 +254,9 @@ class InviteCodeView extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () async {
+                    onTap: () {
                       Navigator.of(sheetContext).pop();
-                      final vm = context.read<InviteCodeViewModel>();
-                      await vm.joinBaby();
-                      if (!context.mounted) return;
-                      if (vm.error != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(vm.error!),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        return;
-                      }
-                      context.push(
-                        AppRoutes.babyProfileSetup,
-                        extra: vm.babyId,
-                      );
+                      context.read<InviteCodeViewModel>().joinBaby();
                     },
                     child: Container(
                       height: 52,
@@ -274,16 +285,10 @@ class InviteCodeView extends StatelessWidget {
     );
   }
 
-  Future<void> _onSubmit(BuildContext context) async {
-    final viewModel = context.read<InviteCodeViewModel>();
-    await viewModel.verifyInviteCode();
-    if (!context.mounted) return;
-    _onViewModelChanged(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<InviteCodeViewModel>();
+    _handleSideEffects(context, viewModel);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -574,7 +579,7 @@ class InviteCodeView extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: GestureDetector(
-        onTap: isEnabled ? () => _onSubmit(context) : null,
+        onTap: isEnabled ? () => viewModel.verifyInviteCode() : null,
         child: AnimatedOpacity(
           opacity: isEnabled ? 1.0 : 0.5,
           duration: const Duration(milliseconds: 200),

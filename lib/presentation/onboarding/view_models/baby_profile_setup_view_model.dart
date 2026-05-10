@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/relationship.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
@@ -24,35 +25,37 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
 
   Relationship? _relationship;
   String _nickname = '';
-  bool _isLoading = false;
+  ActionState _state = ActionState.idle;
   String? _error;
-  bool _isSuccess = false;
 
   Relationship? get relationship => _relationship;
   String get nickname => _nickname;
-  bool get isLoading => _isLoading;
+  ActionState get state => _state;
+  bool get isLoading => _state == ActionState.loading;
   String? get error => _error;
-  bool get isSuccess => _isSuccess;
 
   bool get isValid =>
-      _relationship != null && _nickname.trim().isNotEmpty && !_isLoading;
+      _relationship != null && _nickname.trim().isNotEmpty && !isLoading;
 
   void setRelationship(Relationship value) {
     _relationship = value;
+    if (_state == ActionState.error) _state = ActionState.idle;
+    _error = null;
     notifyListeners();
   }
 
   void setNickname(String value) {
     if (value.length <= nicknameMaxLength) {
       _nickname = value;
+      if (_state == ActionState.error) _state = ActionState.idle;
+      _error = null;
       notifyListeners();
     }
   }
 
   Future<void> submit() async {
-    _isLoading = true;
+    _state = ActionState.loading;
     _error = null;
-    _isSuccess = false;
     notifyListeners();
 
     try {
@@ -61,11 +64,11 @@ class BabyProfileSetupViewModel extends ChangeNotifier {
         relationship: _relationship!.serverValue,
         nickname: _nickname.trim(),
       );
-      _isSuccess = true;
+      _state = ActionState.success;
     } catch (e) {
+      _state = ActionState.error;
       _error = AppStrings.genericError;
     } finally {
-      _isLoading = false;
       notifyListeners();
     }
   }

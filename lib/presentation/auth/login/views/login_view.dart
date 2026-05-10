@@ -20,19 +20,18 @@ class LoginView extends StatelessWidget {
   static const _buttonSectionSpacing = 64.0;
   static const _buttonSpacing = 16.0;
 
-  Future<void> _onSignIn(
-    BuildContext context,
-    SocialAuthProvider provider,
-  ) async {
-    final viewModel = context.read<LoginViewModel>();
-    await viewModel.signIn(provider);
-    if (!context.mounted) return;
-    if (viewModel.isLoggedIn) context.go(AppRoutes.welcome);
+  void _handleSideEffects(BuildContext context, LoginViewModel viewModel) {
+    if (viewModel.isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go(AppRoutes.welcome);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<LoginViewModel>();
+    _handleSideEffects(context, viewModel);
 
     return Scaffold(
       body: Container(
@@ -82,7 +81,7 @@ class LoginView extends StatelessWidget {
                   SocialLoginButton(
                     onPressed: viewModel.isLoading
                         ? null
-                        : () => _onSignIn(context, SocialAuthProvider.kakao),
+                        : () => viewModel.signIn(SocialAuthProvider.kakao),
                     backgroundColor: AppColors.kakaoBackground,
                     icon: Assets.icons.kakao.svg(width: 24),
                     label: AppStrings.kakaoLogin,
@@ -92,7 +91,7 @@ class LoginView extends StatelessWidget {
                   SocialLoginButton(
                     onPressed: viewModel.isLoading
                         ? null
-                        : () => _onSignIn(context, SocialAuthProvider.google),
+                        : () => viewModel.signIn(SocialAuthProvider.google),
                     backgroundColor: AppColors.backgroundPrimary,
                     icon: Assets.icons.google.svg(width: 24),
                     label: AppStrings.googleLogin,
@@ -102,7 +101,7 @@ class LoginView extends StatelessWidget {
                   SocialLoginButton(
                     onPressed: viewModel.isLoading
                         ? null
-                        : () => _onSignIn(context, SocialAuthProvider.apple),
+                        : () => viewModel.signIn(SocialAuthProvider.apple),
                     backgroundColor: AppColors.black,
                     icon: Assets.icons.apple.svg(width: 24),
                     label: AppStrings.appleLogin,

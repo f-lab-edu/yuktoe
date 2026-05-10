@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
 import 'package:yuktoe/common/design_system/app_text_styles.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/gender.dart';
 import 'package:yuktoe/presentation/onboarding/view_models/baby_registration_view_model.dart';
@@ -12,9 +13,34 @@ import 'package:yuktoe/routing/router.dart';
 class BabyRegistrationView extends StatelessWidget {
   const BabyRegistrationView({super.key});
 
+  void _handleSideEffects(BuildContext context, BabyRegistrationViewModel viewModel) {
+    switch (viewModel.state) {
+      case ActionState.success when viewModel.babyId != null:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.push(
+            AppRoutes.babyProfileSetup,
+            extra: viewModel.babyId,
+          );
+          viewModel.resetState();
+        });
+      case ActionState.error when viewModel.error != null:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.error!),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        });
+      default:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<BabyRegistrationViewModel>();
+    _handleSideEffects(context, viewModel);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -79,23 +105,7 @@ class BabyRegistrationView extends StatelessWidget {
           _SubmitButton(
             isEnabled: viewModel.isValid,
             isLoading: viewModel.isLoading,
-            onPressed: () async {
-              await viewModel.submit();
-              if (!context.mounted) return;
-              if (viewModel.error != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.error!),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-                return;
-              }
-              context.push(
-                AppRoutes.babyProfileSetup,
-                extra: viewModel.babyId,
-              );
-            },
+            onPressed: () => viewModel.submit(),
           ),
         ],
       ),
