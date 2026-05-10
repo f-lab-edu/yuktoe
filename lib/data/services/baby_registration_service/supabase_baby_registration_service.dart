@@ -20,7 +20,7 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
   }) async {
     try {
       final result = await _client.rpc(
-        'create_baby',
+        'create_baby_with_owner',
         params: {
           'p_name': name,
           'p_birth_date': birthDate,
@@ -58,7 +58,10 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
         json = result;
       } else {
         return Result.error(
-          AppException(ErrorCode.invalidResponse, 'verify_invite_code returned unexpected type: ${result.runtimeType}'),
+          AppException(
+            ErrorCode.invalidResponse,
+            'verify_invite_code returned unexpected type: ${result.runtimeType}',
+          ),
         );
       }
 
@@ -66,7 +69,11 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
         return Result.ok(BabyPreview.fromJson(json));
       } on Exception catch (e) {
         return Result.error(
-          AppException(ErrorCode.parseFailed, 'Failed to parse BabyPreview', cause: e),
+          AppException(
+            ErrorCode.parseFailed,
+            'Failed to parse BabyPreview',
+            cause: e,
+          ),
         );
       }
     } on Exception catch (e) {
@@ -79,10 +86,7 @@ class SupabaseBabyRegistrationService implements BabyRegistrationService {
   @override
   Future<Result<void>> joinBaby({required String babyId}) async {
     try {
-      await _client.rpc(
-        'join_baby',
-        params: {'p_baby_id': babyId},
-      );
+      await _client.rpc('join_baby', params: {'p_baby_id': babyId});
 
       return Result.ok(null);
     } on Exception catch (e) {
