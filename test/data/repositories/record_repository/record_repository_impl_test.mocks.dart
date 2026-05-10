@@ -9,8 +9,9 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
 import 'package:yuktoe/core/result.dart' as _i4;
 import 'package:yuktoe/data/services/record_service/record_service.dart' as _i2;
+import 'package:yuktoe/domain/models/common/page.dart' as _i7;
 import 'package:yuktoe/domain/models/record/care_record.dart' as _i5;
-import 'package:yuktoe/domain/models/record/record_memo.dart' as _i7;
+import 'package:yuktoe/domain/models/record/record_memo.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -78,33 +79,45 @@ class MockRecordService extends _i1.Mock implements _i2.RecordService {
           as _i3.Future<_i4.Result<void>>);
 
   @override
-  _i3.Future<_i4.Result<List<_i7.RecordMemo>>> getMemos(String? recordId) =>
+  _i3.Future<_i4.Result<_i7.Page<_i8.RecordMemo>>> getMemos(
+    String? recordId, {
+    String? cursor,
+    int? limit = 20,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#getMemos, [recordId]),
-            returnValue: _i3.Future<_i4.Result<List<_i7.RecordMemo>>>.value(
-              _i6.dummyValue<_i4.Result<List<_i7.RecordMemo>>>(
+            Invocation.method(
+              #getMemos,
+              [recordId],
+              {#cursor: cursor, #limit: limit},
+            ),
+            returnValue: _i3.Future<_i4.Result<_i7.Page<_i8.RecordMemo>>>.value(
+              _i6.dummyValue<_i4.Result<_i7.Page<_i8.RecordMemo>>>(
                 this,
-                Invocation.method(#getMemos, [recordId]),
+                Invocation.method(
+                  #getMemos,
+                  [recordId],
+                  {#cursor: cursor, #limit: limit},
+                ),
               ),
             ),
           )
-          as _i3.Future<_i4.Result<List<_i7.RecordMemo>>>);
+          as _i3.Future<_i4.Result<_i7.Page<_i8.RecordMemo>>>);
 
   @override
-  _i3.Future<_i4.Result<_i7.RecordMemo>> createMemo(
+  _i3.Future<_i4.Result<_i8.RecordMemo>> createMemo(
     String? recordId,
     String? content,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#createMemo, [recordId, content]),
-            returnValue: _i3.Future<_i4.Result<_i7.RecordMemo>>.value(
-              _i6.dummyValue<_i4.Result<_i7.RecordMemo>>(
+            returnValue: _i3.Future<_i4.Result<_i8.RecordMemo>>.value(
+              _i6.dummyValue<_i4.Result<_i8.RecordMemo>>(
                 this,
                 Invocation.method(#createMemo, [recordId, content]),
               ),
             ),
           )
-          as _i3.Future<_i4.Result<_i7.RecordMemo>>);
+          as _i3.Future<_i4.Result<_i8.RecordMemo>>);
 
   @override
   _i3.Future<_i4.Result<void>> updateMemo(String? memoId, String? content) =>

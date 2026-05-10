@@ -8,6 +8,7 @@ import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/record_repository/record_repository_impl.dart';
 import 'package:yuktoe/data/services/record_service/record_service.dart';
+import 'package:yuktoe/domain/models/common/page.dart';
 import 'package:yuktoe/domain/models/record/care_record.dart';
 import 'package:yuktoe/domain/models/record/record_detail_data.dart';
 import 'package:yuktoe/domain/models/record/record_memo.dart';
@@ -36,7 +37,9 @@ void main() {
       createdBy: '',
       createdAt: DateTime(2025),
     )));
-    provideDummy<Result<List<RecordMemo>>>(Result.ok([]));
+    provideDummy<Result<Page<RecordMemo>>>(
+      Result.ok(const Page(items: [], nextCursor: null, hasMore: false)),
+    );
     provideDummy<Result<RecordMemo>>(Result.ok(RecordMemo(
       id: '',
       recordId: '',
@@ -192,62 +195,122 @@ void main() {
   group('getMemos', () {
     const recordId = 'record-1';
 
-    test('returns memo list when service returns Ok', () async {
-      // given
-      final memos = [
-        RecordMemo(
-          id: 'memo-1',
+    RecordMemo memo(int n) => RecordMemo(
+          id: 'memo-$n',
           recordId: recordId,
-          content: '첫 번째 메모',
+          content: '메모 $n',
           authorId: 'user-1',
           authorName: '엄마',
-          createdAt: DateTime(2025, 3, 30, 10, 0),
-        ),
-        RecordMemo(
-          id: 'memo-2',
-          recordId: recordId,
-          content: '두 번째 메모',
-          authorId: 'user-2',
-          authorName: '아빠',
-          createdAt: DateTime(2025, 3, 30, 11, 0),
-        ),
-      ];
-      when(mockService.getMemos(recordId))
-          .thenAnswer((_) async => Result.ok(memos));
+          createdAt: DateTime(2025, 3, 30, 10, n),
+        );
+
+    test('first page (cursor=null) returns limit items with hasMore and nextCursor',
+        () async {
+      // given
+      final items = List.generate(2, memo);
+      final page = Page(
+        items: items,
+        nextCursor: items.last.createdAt.toIso8601String(),
+        hasMore: true,
+      );
+      when(mockService.getMemos(recordId, cursor: null, limit: 2))
+          .thenAnswer((_) async => Result.ok(page));
 
       // when
-      final result = await repository.getMemos(recordId);
+      final result = await repository.getMemos(recordId, limit: 2);
 
       // then
-      expect(result, isA<Ok<List<RecordMemo>>>());
-      expect((result as Ok<List<RecordMemo>>).value, same(memos));
+      expect(result, isA<Ok<Page<RecordMemo>>>());
+      final value = (result as Ok<Page<RecordMemo>>).value;
+      expect(value.items, hasLength(2));
+      expect(value.hasMore, isTrue);
+      expect(value.nextCursor, items.last.createdAt.toIso8601String());
     });
 
-    test('returns empty list when service returns Ok with no data', () async {
+    test('next page (with cursor) returns subsequent items and ends with hasMore=false',
+        () async {
       // given
-      when(mockService.getMemos(recordId))
-          .thenAnswer((_) async => Result.ok(<RecordMemo>[]));
+      final cursor = DateTime(2025, 3, 30, 10, 0).toIso8601String();
+      final items = [memo(3)];
+      final page = Page<RecordMemo>(
+        items: items,
+        nextCursor: null,
+        hasMore: false,
+      );
+      when(mockService.getMemos(recordId, cursor: cursor, limit: 2))
+          .thenAnswer((_) async => Result.ok(page));
+
+      // when
+      final result =
+          await repository.getMemos(recordId, cursor: cursor, limit: 2);
+
+      // then
+      expect(result, isA<Ok<Page<RecordMemo>>>());
+      final value = (result as Ok<Page<RecordMemo>>).value;
+      expect(value.items, hasLength(1));
+      expect(value.hasMore, isFalse);
+      expect(value.nextCursor, isNull);
+    });
+
+    test('empty result returns empty items, hasMore=false, nextCursor=null',
+        () async {
+      // given
+      when(mockService.getMemos(recordId, cursor: null, limit: 20))
+          .thenAnswer(
+        (_) async => Result.ok(
+          const Page<RecordMemo>(
+            items: [],
+            nextCursor: null,
+            hasMore: false,
+          ),
+        ),
+      );
 
       // when
       final result = await repository.getMemos(recordId);
 
       // then
-      expect(result, isA<Ok<List<RecordMemo>>>());
-      expect((result as Ok<List<RecordMemo>>).value, isEmpty);
+      expect(result, isA<Ok<Page<RecordMemo>>>());
+      final value = (result as Ok<Page<RecordMemo>>).value;
+      expect(value.items, isEmpty);
+      expect(value.hasMore, isFalse);
+      expect(value.nextCursor, isNull);
+    });
+
+    test('exactly limit items returns hasMore=false (limit+1 trick)',
+        () async {
+      // given: service가 limit+1 트릭을 적용한 결과 — 정확히 limit 개일 때 hasMore=false
+      final items = List.generate(2, memo);
+      final page = Page<RecordMemo>(
+        items: items,
+        nextCursor: null,
+        hasMore: false,
+      );
+      when(mockService.getMemos(recordId, cursor: null, limit: 2))
+          .thenAnswer((_) async => Result.ok(page));
+
+      // when
+      final result = await repository.getMemos(recordId, limit: 2);
+
+      // then
+      final value = (result as Ok<Page<RecordMemo>>).value;
+      expect(value.items, hasLength(2));
+      expect(value.hasMore, isFalse);
+      expect(value.nextCursor, isNull);
     });
 
     test('returns Error when service returns Error', () async {
       // given
       final exception = AppException('메모 조회 실패');
-      when(mockService.getMemos(recordId))
+      when(mockService.getMemos(recordId, cursor: null, limit: 20))
           .thenAnswer((_) async => Result.error(exception));
 
       // when
       final result = await repository.getMemos(recordId);
 
       // then
-      expect(result, isA<Error<List<RecordMemo>>>());
-      expect((result as Error<List<RecordMemo>>).error, same(exception));
+      expect(result, isA<Error<Page<RecordMemo>>>());
+      expect((result as Error<Page<RecordMemo>>).error, same(exception));
     });
   });
 
