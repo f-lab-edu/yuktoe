@@ -38,10 +38,6 @@ class RecordRepositoryImpl implements RecordRepository {
       data['detail'] = _serializeDetail(detail);
     }
 
-    if (data.isEmpty) {
-      return Result.ok(null);
-    }
-
     final result = await _recordService.updateRecord(recordId, data);
     switch (result) {
       case Ok<void>():

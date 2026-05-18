@@ -138,15 +138,6 @@ void main() {
       expect(lastUpdateData!['detail'], {'diaper_type': 'poop'});
     });
 
-    test('does not call service when no fields are provided', () async {
-      // when
-      final result = await repository.updateRecord('record-1');
-
-      // then
-      expect(result, isA<Ok<void>>());
-      expect(updateCallCount, 0);
-    });
-
     test('returns Error when service returns Error', () async {
       // given
       final exception = AppException('수정 실패');
