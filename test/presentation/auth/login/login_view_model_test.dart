@@ -9,7 +9,7 @@ import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/domain/models/auth/app_session.dart';
 import 'package:yuktoe/domain/models/auth/app_user.dart';
-import 'package:yuktoe/presentation/auth/login/login_view_model.dart';
+import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
 
 import 'login_view_model_test.mocks.dart';
 
@@ -75,13 +75,13 @@ void main() {
       // given
       when(
         mockAuthRepository.signIn(SocialAuthProvider.kakao),
-      ).thenAnswer((_) async => Result.error(AppException('로그인 실패')));
+      ).thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, 'sign in failed')));
 
       // when
       await viewModel.signIn(SocialAuthProvider.kakao);
 
       // then
-      expect(viewModel.errorMessage, '로그인 실패');
+      expect(viewModel.errorMessage, '오류가 발생했습니다.');
       expect(viewModel.session, isNull);
       expect(viewModel.isLoggedIn, isFalse);
       expect(viewModel.isLoading, isFalse);
@@ -117,13 +117,13 @@ void main() {
       // given - first call fails
       when(
         mockAuthRepository.signIn(SocialAuthProvider.kakao),
-      ).thenAnswer((_) async => Result.error(AppException('첫 번째 에러')));
+      ).thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, 'first error')));
 
       // when
       await viewModel.signIn(SocialAuthProvider.kakao);
 
       // then
-      expect(viewModel.errorMessage, '첫 번째 에러');
+      expect(viewModel.errorMessage, '오류가 발생했습니다.');
 
       // given - second call succeeds
       final session = createSession();
@@ -169,7 +169,7 @@ void main() {
 
       expect(viewModel.session, isNull);
       expect(viewModel.isLoggedIn, isFalse);
-      expect(viewModel.errorMessage, '로그인 중 알 수 없는 오류가 발생했습니다.');
+      expect(viewModel.errorMessage, '오류가 발생했습니다.');
       expect(viewModel.isLoading, isFalse);
     });
 

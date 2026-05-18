@@ -92,7 +92,7 @@ void main() {
         'when getSession is called, '
         'then session is cleared and error is returned', () async {
       // arrange
-      final exception = AppException('session error');
+      final exception = AppException(ErrorCode.unknown, 'session error');
       when(mockAuthService.getCurrentSession())
           .thenAnswer((_) async => Result.error(exception));
 
@@ -149,7 +149,7 @@ void main() {
         'when signIn is called, '
         'then error is returned and getCurrentSession is not called', () async {
       // arrange
-      final exception = AppException('sign in error');
+      final exception = AppException(ErrorCode.unknown, 'sign in error');
       when(mockAuthService.signIn(SocialAuthProvider.google))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -166,7 +166,7 @@ void main() {
         'when signIn is called, '
         'then error is propagated and session is null', () async {
       // arrange
-      final exception = AppException('session fetch error');
+      final exception = AppException(ErrorCode.unknown, 'session fetch error');
       when(mockAuthService.signIn(SocialAuthProvider.google))
           .thenAnswer((_) async => Result.ok(null));
       when(mockAuthService.getCurrentSession())
@@ -216,7 +216,7 @@ void main() {
       await repository.getSession();
       expect(repository.isLoggedIn, isTrue);
 
-      final exception = AppException('sign out error');
+      final exception = AppException(ErrorCode.unknown, 'sign out error');
       when(mockAuthService.signOut())
           .thenAnswer((_) async => Result.error(exception));
 

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/core/config/app_env.dart';
 import 'package:yuktoe/core/config/dependencies.dart';
-import 'package:yuktoe/presentation/auth/login/login_screen.dart';
+import 'package:yuktoe/routing/router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,12 +29,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: buildDependencies(),
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Yuktoe',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
-        home: const LoginScreen(),
+        routerConfig: router,
       ),
     );
   }

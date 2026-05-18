@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:yuktoe/common/design_system/app_colors.dart';
+import 'package:yuktoe/common/design_system/app_text_styles.dart';
 import 'package:yuktoe/common/views/logo.dart';
+import 'package:yuktoe/constants/app_strings.dart';
+import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/gen/assets.gen.dart';
+import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
+import 'package:yuktoe/routing/router.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
-
-  static const _appTitle = '내꿈은육퇴';
-  static const _appSubtitle = '우리 아기 성장 기록';
-  static const _kakaoLoginText = '카카오로 시작하기';
-  static const _googleLoginText = 'Google로 시작하기';
-  static const _appleLoginText = 'Apple로 시작하기';
 
   static const _horizontalPadding = 32.0;
   static const _topSpacing = 48.0;
@@ -19,8 +20,19 @@ class LoginView extends StatelessWidget {
   static const _buttonSectionSpacing = 64.0;
   static const _buttonSpacing = 16.0;
 
+  void _handleSideEffects(BuildContext context, LoginViewModel viewModel) {
+    if (viewModel.isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go(AppRoutes.welcome);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<LoginViewModel>();
+    _handleSideEffects(context, viewModel);
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -35,55 +47,68 @@ class LoginView extends StatelessWidget {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+              padding: const EdgeInsets.symmetric(
+                horizontal: _horizontalPadding,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: _topSpacing),
                   Logo(),
                   const SizedBox(height: _logoTitleSpacing),
-                  const Text(
-                    _appTitle,
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
+                  Text(
+                    AppStrings.appTitle,
+                    style: AppTextStyles.display.bold.copyWith(
                       color: AppColors.textPrimary,
-                      letterSpacing: 0.37,
                     ),
                   ),
                   const SizedBox(height: _titleSubtitleSpacing),
-                  const Text(
-                    _appSubtitle,
-                    style: TextStyle(
-                      fontSize: 16,
+                  Text(
+                    AppStrings.appSubtitle,
+                    style: AppTextStyles.body.regular.copyWith(
                       color: AppColors.textSecondary,
-                      letterSpacing: -0.31,
                     ),
                   ),
                   const SizedBox(height: _buttonSectionSpacing),
+                  if (viewModel.errorMessage != null) ...[
+                    Text(
+                      viewModel.errorMessage!,
+                      style: const TextStyle(color: AppColors.error),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   SocialLoginButton(
-                    onPressed: () {},
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => viewModel.signIn(SocialAuthProvider.kakao),
                     backgroundColor: AppColors.kakaoBackground,
                     icon: Assets.icons.kakao.svg(width: 24),
-                    label: _kakaoLoginText,
+                    label: AppStrings.kakaoLogin,
                     textColor: AppColors.textPrimary,
                   ),
                   const SizedBox(height: _buttonSpacing),
                   SocialLoginButton(
-                    onPressed: () {},
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => viewModel.signIn(SocialAuthProvider.google),
                     backgroundColor: AppColors.backgroundPrimary,
                     icon: Assets.icons.google.svg(width: 24),
-                    label: _googleLoginText,
+                    label: AppStrings.googleLogin,
                     textColor: AppColors.textPrimary,
                   ),
                   const SizedBox(height: _buttonSpacing),
                   SocialLoginButton(
-                    onPressed: () {},
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => viewModel.signIn(SocialAuthProvider.apple),
                     backgroundColor: AppColors.black,
                     icon: Assets.icons.apple.svg(width: 24),
-                    label: _appleLoginText,
+                    label: AppStrings.appleLogin,
                     textColor: AppColors.textOnDark,
                   ),
+                  const SizedBox(height: 24),
+                  if (viewModel.isLoading) const CircularProgressIndicator(),
                 ],
               ),
             ),
@@ -95,7 +120,7 @@ class LoginView extends StatelessWidget {
 }
 
 class SocialLoginButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color backgroundColor;
   final Widget icon;
   final String label;
@@ -113,8 +138,6 @@ class SocialLoginButton extends StatelessWidget {
   static const _buttonHeight = 56.0;
   static const _buttonRadius = 16.0;
   static const _iconLabelSpacing = 12.0;
-  static const _buttonFontSize = 16.0;
-  static const _buttonLetterSpacing = -0.31;
 
   @override
   Widget build(BuildContext context) {
@@ -138,12 +161,7 @@ class SocialLoginButton extends StatelessWidget {
             const SizedBox(width: _iconLabelSpacing),
             Text(
               label,
-              style: TextStyle(
-                fontSize: _buttonFontSize,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-                letterSpacing: _buttonLetterSpacing,
-              ),
+              style: AppTextStyles.body.semibold.copyWith(color: textColor),
             ),
           ],
         ),
