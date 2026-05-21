@@ -1,7 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:yuktoe/constants/enum/diaper_type.dart';
 import 'package:yuktoe/constants/enum/record_type.dart';
-import 'package:yuktoe/constants/enum/sleep_type.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/domain/models/common/page.dart';
@@ -151,7 +149,7 @@ class SupabaseRecordService implements RecordService {
 
   CareRecord _mapRecord(Map<String, dynamic> data) {
     final type = RecordType.values.byName(data['type'] as String);
-    final detail = _parseDetail(
+    final detail = RecordDetailData.fromJson(
       type,
       data['detail'] as Map<String, dynamic>,
     );
@@ -165,39 +163,6 @@ class SupabaseRecordService implements RecordService {
       createdBy: data['created_by'] as String,
       createdAt: DateTime.parse(data['created_at'] as String),
     );
-  }
-
-  RecordDetailData _parseDetail(
-    RecordType type,
-    Map<String, dynamic> json,
-  ) {
-    return switch (type) {
-      RecordType.breast => BreastDetail(
-          leftMinutes: json['left_minutes'] as int?,
-          rightMinutes: json['right_minutes'] as int?,
-        ),
-      RecordType.pumping => PumpingDetail(
-          amountMl: json['amount_ml'] as int,
-        ),
-      RecordType.formula => FormulaDetail(
-          amountMl: json['amount_ml'] as int,
-        ),
-      RecordType.sleep => SleepDetail(
-          sleepType: SleepType.values.byName(json['sleep_type'] as String),
-          endTime: json['end_time'] != null
-              ? DateTime.parse(json['end_time'] as String)
-              : null,
-        ),
-      RecordType.diaper => DiaperDetail(
-          diaperType: DiaperType.values.byName(json['diaper_type'] as String),
-        ),
-      RecordType.supplement => SupplementDetail(
-          name: json['name'] as String,
-        ),
-      RecordType.water => WaterDetail(
-          amountMl: json['amount_ml'] as int,
-        ),
-    };
   }
 
   RecordMemo _mapMemo(Map<String, dynamic> data) {

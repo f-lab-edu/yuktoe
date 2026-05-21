@@ -35,7 +35,7 @@ class RecordRepositoryImpl implements RecordRepository {
     }
 
     if (detail != null) {
-      data['detail'] = _serializeDetail(detail);
+      data['detail'] = detail.toJson();
     }
 
     final result = await _recordService.updateRecord(recordId, data);
@@ -110,21 +110,4 @@ class RecordRepositoryImpl implements RecordRepository {
     }
   }
 
-  Map<String, dynamic> _serializeDetail(RecordDetailData detail) {
-    return switch (detail) {
-      BreastDetail() => {
-        'left_minutes': detail.leftMinutes,
-        'right_minutes': detail.rightMinutes,
-      },
-      PumpingDetail() => {'amount_ml': detail.amountMl},
-      FormulaDetail() => {'amount_ml': detail.amountMl},
-      SleepDetail() => {
-        'sleep_type': detail.sleepType.name,
-        'end_time': detail.endTime?.toIso8601String(),
-      },
-      DiaperDetail() => {'diaper_type': detail.diaperType.name},
-      SupplementDetail() => {'name': detail.name},
-      WaterDetail() => {'amount_ml': detail.amountMl},
-    };
-  }
 }
