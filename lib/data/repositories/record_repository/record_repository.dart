@@ -6,11 +6,7 @@ import 'package:yuktoe/domain/models/record/record_memo.dart';
 
 abstract interface class RecordRepository {
   Future<Result<CareRecord>> getRecord(String recordId);
-  Future<Result<void>> updateRecord(
-    String recordId, {
-    DateTime? recordedAt,
-    RecordDetailData? detail,
-  });
+  Future<Result<void>> updateRecord(String recordId, RecordDetailData detail);
   Future<Result<void>> deleteRecord(String recordId);
   Future<Result<Page<RecordMemo>>> getMemos(
     String recordId, {

@@ -158,7 +158,6 @@ class SupabaseRecordService implements RecordService {
       id: data['id'] as String,
       babyId: data['baby_id'] as String,
       type: type,
-      recordedAt: DateTime.parse(data['recorded_at'] as String),
       detail: detail,
       createdBy: data['created_by'] as String,
       createdAt: DateTime.parse(data['created_at'] as String),

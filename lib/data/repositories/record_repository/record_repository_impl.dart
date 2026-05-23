@@ -24,19 +24,13 @@ class RecordRepositoryImpl implements RecordRepository {
 
   @override
   Future<Result<void>> updateRecord(
-    String recordId, {
-    DateTime? recordedAt,
-    RecordDetailData? detail,
-  }) async {
-    final data = <String, dynamic>{};
-
-    if (recordedAt != null) {
-      data['recorded_at'] = recordedAt.toIso8601String();
-    }
-
-    if (detail != null) {
-      data['detail'] = detail.toJson();
-    }
+    String recordId,
+    RecordDetailData detail,
+  ) async {
+    final data = {
+      'occurred_at': detail.occurredAt.toIso8601String(),
+      'detail': detail.toJson(),
+    };
 
     final result = await _recordService.updateRecord(recordId, data);
     switch (result) {
