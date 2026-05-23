@@ -32,8 +32,10 @@ void main() {
       id: '',
       babyId: '',
       type: RecordType.diaper,
-      recordedAt: DateTime(2025),
-      detail: const DiaperDetail(diaperType: DiaperType.pee),
+      detail: DiaperDetail(
+        occurredAt: DateTime(2025),
+        diaperType: DiaperType.pee,
+      ),
       createdBy: '',
       createdAt: DateTime(2025),
     )));
@@ -72,8 +74,12 @@ void main() {
         id: 'record-1',
         babyId: 'baby-1',
         type: RecordType.breast,
-        recordedAt: DateTime(2025, 3, 30, 14, 30),
-        detail: const BreastDetail(leftMinutes: 10, rightMinutes: 15),
+        detail: BreastDetail(
+          startedAt: DateTime(2025, 3, 30, 14, 30),
+          endedAt: DateTime(2025, 3, 30, 14, 55),
+          leftMinutes: 10,
+          rightMinutes: 15,
+        ),
         createdBy: 'user-1',
         createdAt: DateTime(2025, 3, 30, 14, 30),
       );
@@ -103,39 +109,42 @@ void main() {
   });
 
   group('updateRecord', () {
-    test('sends serialized data when recordedAt and detail are provided',
-        () async {
+    test('sends occurred_at and serialized detail', () async {
       // given
-      final recordedAt = DateTime(2025, 3, 30, 15, 0);
-      const detail = SleepDetail(sleepType: SleepType.nap);
+      final detail = SleepDetail(
+        startedAt: DateTime(2025, 3, 30, 14, 0),
+        endedAt: DateTime(2025, 3, 30, 15, 0),
+        sleepType: SleepType.nap,
+      );
 
       // when
-      final result = await repository.updateRecord(
-        'record-1',
-        recordedAt: recordedAt,
-        detail: detail,
-      );
+      final result = await repository.updateRecord('record-1', detail);
 
       // then
       expect(result, isA<Ok<void>>());
       expect(updateCallCount, 1);
-      expect(lastUpdateData!['recorded_at'], recordedAt.toIso8601String());
-      expect(lastUpdateData!['detail'], {
-        'sleep_type': 'nap',
-        'end_time': null,
-      });
+      expect(
+        lastUpdateData!['occurred_at'],
+        detail.occurredAt.toIso8601String(),
+      );
+      expect(lastUpdateData!['detail'], detail.toJson());
     });
 
-    test('sends only detail when recordedAt is not provided', () async {
+    test('occurred_at is derived from detail.occurredAt for moment types',
+        () async {
       // given
-      const detail = DiaperDetail(diaperType: DiaperType.poop);
+      final occurredAt = DateTime(2025, 3, 30, 16, 0);
+      final detail = DiaperDetail(
+        occurredAt: occurredAt,
+        diaperType: DiaperType.poop,
+      );
 
       // when
-      await repository.updateRecord('record-1', detail: detail);
+      await repository.updateRecord('record-1', detail);
 
       // then
-      expect(lastUpdateData!.containsKey('recorded_at'), isFalse);
-      expect(lastUpdateData!['detail'], {'diaper_type': 'poop'});
+      expect(lastUpdateData!['occurred_at'], occurredAt.toIso8601String());
+      expect(lastUpdateData!['detail'], detail.toJson());
     });
 
     test('returns Error when service returns Error', () async {
@@ -146,7 +155,7 @@ void main() {
       // when
       final result = await repository.updateRecord(
         'record-1',
-        detail: const FormulaDetail(amountMl: 120),
+        FormulaDetail(occurredAt: DateTime(2025), amountMl: 120),
       );
 
       // then
@@ -406,63 +415,137 @@ void main() {
     });
   });
 
-  group('updateRecord serialization', () {
-    test('BreastDetail is serialized correctly', () async {
-      // when
-      await repository.updateRecord(
-        'record-1',
-        detail: const BreastDetail(leftMinutes: 10, rightMinutes: 15),
+  group('detail serialization (toJson)', () {
+    test('BreastDetail', () {
+      final detail = BreastDetail(
+        startedAt: DateTime(2025, 3, 30, 14, 0),
+        endedAt: DateTime(2025, 3, 30, 14, 25),
+        leftMinutes: 10,
+        rightMinutes: 15,
       );
-
-      // then
-      expect(lastUpdateData!['detail'], {
+      expect(detail.toJson(), {
+        'started_at': DateTime(2025, 3, 30, 14, 0).toIso8601String(),
+        'ended_at': DateTime(2025, 3, 30, 14, 25).toIso8601String(),
         'left_minutes': 10,
         'right_minutes': 15,
       });
+      expect(detail.occurredAt, detail.startedAt);
     });
 
-    test('PumpingDetail is serialized correctly', () async {
-      // when
-      await repository.updateRecord(
-        'record-1',
-        detail: const PumpingDetail(amountMl: 120),
+    test('SleepDetail', () {
+      final detail = SleepDetail(
+        startedAt: DateTime(2025, 3, 30, 13, 0),
+        endedAt: DateTime(2025, 3, 30, 14, 30),
+        sleepType: SleepType.nap,
       );
-
-      // then
-      expect(lastUpdateData!['detail'], {'amount_ml': 120});
+      expect(detail.toJson(), {
+        'started_at': DateTime(2025, 3, 30, 13, 0).toIso8601String(),
+        'ended_at': DateTime(2025, 3, 30, 14, 30).toIso8601String(),
+        'sleep_type': 'nap',
+      });
+      expect(detail.occurredAt, detail.startedAt);
     });
 
-    test('FormulaDetail is serialized correctly', () async {
-      // when
-      await repository.updateRecord(
-        'record-1',
-        detail: const FormulaDetail(amountMl: 200),
+    test('PumpingDetail', () {
+      final detail = PumpingDetail(
+        occurredAt: DateTime(2025, 3, 30, 10, 0),
+        amountMl: 120,
       );
-
-      // then
-      expect(lastUpdateData!['detail'], {'amount_ml': 200});
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 10, 0).toIso8601String(),
+        'amount_ml': 120,
+      });
     });
 
-    test('SupplementDetail is serialized correctly', () async {
-      // when
-      await repository.updateRecord(
-        'record-1',
-        detail: const SupplementDetail(name: '비타민D'),
+    test('FormulaDetail', () {
+      final detail = FormulaDetail(
+        occurredAt: DateTime(2025, 3, 30, 11, 0),
+        amountMl: 200,
       );
-
-      // then
-      expect(lastUpdateData!['detail'], {'name': '비타민D'});
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 11, 0).toIso8601String(),
+        'amount_ml': 200,
+      });
     });
 
-    test('WaterDetail is serialized correctly', () async {
-      // when
-      await repository.updateRecord(
-        'record-1',
-        detail: const WaterDetail(amountMl: 50),
+    test('DiaperDetail', () {
+      final detail = DiaperDetail(
+        occurredAt: DateTime(2025, 3, 30, 12, 0),
+        diaperType: DiaperType.poop,
       );
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 12, 0).toIso8601String(),
+        'diaper_type': 'poop',
+      });
+    });
 
-      // then
-      expect(lastUpdateData!['detail'], {'amount_ml': 50});
+    test('SupplementDetail', () {
+      final detail = SupplementDetail(
+        occurredAt: DateTime(2025, 3, 30, 9, 0),
+        name: '비타민D',
+      );
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 9, 0).toIso8601String(),
+        'name': '비타민D',
+      });
+    });
+
+    test('WaterDetail', () {
+      final detail = WaterDetail(
+        occurredAt: DateTime(2025, 3, 30, 15, 0),
+        amountMl: 50,
+      );
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 15, 0).toIso8601String(),
+        'amount_ml': 50,
+      });
+    });
+  });
+
+  group('detail deserialization (fromJson)', () {
+    test('BreastDetail round-trip', () {
+      final original = BreastDetail(
+        startedAt: DateTime(2025, 3, 30, 14, 0),
+        endedAt: DateTime(2025, 3, 30, 14, 25),
+        leftMinutes: 10,
+        rightMinutes: 15,
+      );
+      final decoded = RecordDetailData.fromJson(
+        RecordType.breast,
+        original.toJson(),
+      ) as BreastDetail;
+      expect(decoded.startedAt, original.startedAt);
+      expect(decoded.endedAt, original.endedAt);
+      expect(decoded.leftMinutes, original.leftMinutes);
+      expect(decoded.rightMinutes, original.rightMinutes);
+    });
+
+    test('SleepDetail round-trip', () {
+      final original = SleepDetail(
+        startedAt: DateTime(2025, 3, 30, 13, 0),
+        endedAt: DateTime(2025, 3, 30, 14, 30),
+        sleepType: SleepType.night,
+      );
+      final decoded = RecordDetailData.fromJson(
+        RecordType.sleep,
+        original.toJson(),
+      ) as SleepDetail;
+      expect(decoded.startedAt, original.startedAt);
+      expect(decoded.endedAt, original.endedAt);
+      expect(decoded.sleepType, original.sleepType);
+    });
+
+    test('DiaperDetail round-trip', () {
+      final original = DiaperDetail(
+        occurredAt: DateTime(2025, 3, 30, 12, 0),
+        diaperType: DiaperType.poop,
+      );
+      final decoded = RecordDetailData.fromJson(
+        RecordType.diaper,
+        original.toJson(),
+      ) as DiaperDetail;
+      expect(decoded.occurredAt, original.occurredAt);
+      expect(decoded.diaperType, original.diaperType);
     });
   });
 }
