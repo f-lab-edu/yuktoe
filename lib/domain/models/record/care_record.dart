@@ -5,7 +5,6 @@ class CareRecord {
   final String id;
   final String babyId;
   final RecordType type;
-  final DateTime recordedAt;
   final RecordDetailData detail;
   final String createdBy;
   final DateTime createdAt;
@@ -14,7 +13,6 @@ class CareRecord {
     required this.id,
     required this.babyId,
     required this.type,
-    required this.recordedAt,
     required this.detail,
     required this.createdBy,
     required this.createdAt,

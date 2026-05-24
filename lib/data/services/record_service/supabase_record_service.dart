@@ -1,9 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:yuktoe/constants/enum/diaper_type.dart';
 import 'package:yuktoe/constants/enum/record_type.dart';
-import 'package:yuktoe/constants/enum/sleep_type.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
+import 'package:yuktoe/domain/models/common/page.dart';
 import 'package:yuktoe/domain/models/record/care_record.dart';
 import 'package:yuktoe/domain/models/record/record_detail_data.dart';
 import 'package:yuktoe/domain/models/record/record_memo.dart';
@@ -61,16 +60,34 @@ class SupabaseRecordService implements RecordService {
   }
 
   @override
-  Future<Result<List<RecordMemo>>> getMemos(String recordId) async {
+  Future<Result<Page<RecordMemo>>> getMemos(
+    String recordId, {
+    String? cursor,
+    int limit = 20,
+  }) async {
     try {
-      final data = await _client
+      var query = _client
           .from('record_memos')
           .select('*, baby_members(nickname)')
-          .eq('record_id', recordId)
-          .order('created_at');
+          .eq('record_id', recordId);
 
-      final memos = data.map(_mapMemo).toList();
-      return Result.ok(memos);
+      if (cursor != null) {
+        query = query.gt('created_at', cursor);
+      }
+
+      final data = await query
+          .order('created_at', ascending: true)
+          .limit(limit + 1);
+
+      final hasMore = data.length > limit;
+      final pageData = hasMore ? data.sublist(0, limit) : data;
+      final items = pageData.map(_mapMemo).toList();
+      final nextCursor =
+          hasMore ? items.last.createdAt.toIso8601String() : null;
+
+      return Result.ok(
+        Page(items: items, nextCursor: nextCursor, hasMore: hasMore),
+      );
     } on Exception catch (e) {
       return Result.error(
         AppException('Failed to get memos', cause: e),
@@ -132,7 +149,7 @@ class SupabaseRecordService implements RecordService {
 
   CareRecord _mapRecord(Map<String, dynamic> data) {
     final type = RecordType.values.byName(data['type'] as String);
-    final detail = _parseDetail(
+    final detail = RecordDetailData.fromJson(
       type,
       data['detail'] as Map<String, dynamic>,
     );
@@ -141,44 +158,10 @@ class SupabaseRecordService implements RecordService {
       id: data['id'] as String,
       babyId: data['baby_id'] as String,
       type: type,
-      recordedAt: DateTime.parse(data['recorded_at'] as String),
       detail: detail,
       createdBy: data['created_by'] as String,
       createdAt: DateTime.parse(data['created_at'] as String),
     );
-  }
-
-  RecordDetailData _parseDetail(
-    RecordType type,
-    Map<String, dynamic> json,
-  ) {
-    return switch (type) {
-      RecordType.breast => BreastDetail(
-          leftMinutes: json['left_minutes'] as int?,
-          rightMinutes: json['right_minutes'] as int?,
-        ),
-      RecordType.pumping => PumpingDetail(
-          amountMl: json['amount_ml'] as int,
-        ),
-      RecordType.formula => FormulaDetail(
-          amountMl: json['amount_ml'] as int,
-        ),
-      RecordType.sleep => SleepDetail(
-          sleepType: SleepType.values.byName(json['sleep_type'] as String),
-          endTime: json['end_time'] != null
-              ? DateTime.parse(json['end_time'] as String)
-              : null,
-        ),
-      RecordType.diaper => DiaperDetail(
-          diaperType: DiaperType.values.byName(json['diaper_type'] as String),
-        ),
-      RecordType.supplement => SupplementDetail(
-          name: json['name'] as String,
-        ),
-      RecordType.water => WaterDetail(
-          amountMl: json['amount_ml'] as int,
-        ),
-    };
   }
 
   RecordMemo _mapMemo(Map<String, dynamic> data) {
