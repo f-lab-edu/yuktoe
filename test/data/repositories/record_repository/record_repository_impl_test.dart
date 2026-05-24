@@ -427,14 +427,27 @@ void main() {
       expect(detail.occurredAt, detail.startedAt);
     });
 
-    test('PumpingDetail', () {
+    test('PumpingDetail (left + right amounts)', () {
       final detail = PumpingDetail(
         occurredAt: DateTime(2025, 3, 30, 10, 0),
-        amountMl: 120,
+        leftAmountMl: 60,
+        rightAmountMl: 50,
       );
       expect(detail.toJson(), {
         'occurred_at': DateTime(2025, 3, 30, 10, 0).toIso8601String(),
-        'amount_ml': 120,
+        'left_amount_ml': 60,
+        'right_amount_ml': 50,
+      });
+    });
+
+    test('PumpingFeedDetail', () {
+      final detail = PumpingFeedDetail(
+        occurredAt: DateTime(2025, 3, 30, 11, 0),
+        amountMl: 150,
+      );
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 11, 0).toIso8601String(),
+        'amount_ml': 150,
       });
     });
 
@@ -460,14 +473,27 @@ void main() {
       });
     });
 
-    test('SupplementDetail', () {
-      final detail = SupplementDetail(
+    test('BabyFoodDetail', () {
+      final detail = BabyFoodDetail(
+        occurredAt: DateTime(2025, 3, 30, 12, 30),
+        name: '단호박 이유식',
+        amountMl: 80,
+      );
+      expect(detail.toJson(), {
+        'occurred_at': DateTime(2025, 3, 30, 12, 30).toIso8601String(),
+        'name': '단호박 이유식',
+        'amount_ml': 80,
+      });
+    });
+
+    test('SnackDetail', () {
+      final detail = SnackDetail(
         occurredAt: DateTime(2025, 3, 30, 9, 0),
-        name: '비타민D',
+        name: '바나나',
       );
       expect(detail.toJson(), {
         'occurred_at': DateTime(2025, 3, 30, 9, 0).toIso8601String(),
-        'name': '비타민D',
+        'name': '바나나',
       });
     });
 
