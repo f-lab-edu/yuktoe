@@ -1,1 +1,11 @@
-enum RecordType { breast, pumping, formula, sleep, diaper, supplement, water }
+enum RecordType {
+  breast,
+  pumping,
+  pumpingFeed,
+  formula,
+  sleep,
+  diaper,
+  babyFood,
+  snack,
+  water,
+}

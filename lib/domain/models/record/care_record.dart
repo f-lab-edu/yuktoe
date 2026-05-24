@@ -17,4 +17,13 @@ class CareRecord {
     required this.createdBy,
     required this.createdAt,
   });
+
+  CareRecord copyWith({RecordDetailData? detail}) => CareRecord(
+        id: id,
+        babyId: babyId,
+        type: type,
+        detail: detail ?? this.detail,
+        createdBy: createdBy,
+        createdAt: createdAt,
+      );
 }
