@@ -109,7 +109,8 @@ void main() {
   });
 
   group('updateRecord', () {
-    test('sends occurred_at and serialized detail', () async {
+    test('sends only the detail column (occurred_at derived via DB generated column)',
+        () async {
       // given
       final detail = SleepDetail(
         startedAt: DateTime(2025, 3, 30, 14, 0),
@@ -123,27 +124,7 @@ void main() {
       // then
       expect(result, isA<Ok<void>>());
       expect(updateCallCount, 1);
-      expect(
-        lastUpdateData!['occurred_at'],
-        detail.occurredAt.toIso8601String(),
-      );
-      expect(lastUpdateData!['detail'], detail.toJson());
-    });
-
-    test('occurred_at is derived from detail.occurredAt for moment types',
-        () async {
-      // given
-      final occurredAt = DateTime(2025, 3, 30, 16, 0);
-      final detail = DiaperDetail(
-        occurredAt: occurredAt,
-        diaperType: DiaperType.poop,
-      );
-
-      // when
-      await repository.updateRecord('record-1', detail);
-
-      // then
-      expect(lastUpdateData!['occurred_at'], occurredAt.toIso8601String());
+      expect(lastUpdateData!.keys, ['detail']);
       expect(lastUpdateData!['detail'], detail.toJson());
     });
 

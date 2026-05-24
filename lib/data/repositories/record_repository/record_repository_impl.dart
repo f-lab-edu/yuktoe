@@ -27,12 +27,10 @@ class RecordRepositoryImpl implements RecordRepository {
     String recordId,
     RecordDetailData detail,
   ) async {
-    final data = {
-      'occurred_at': detail.occurredAt.toIso8601String(),
-      'detail': detail.toJson(),
-    };
-
-    final result = await _recordService.updateRecord(recordId, data);
+    final result = await _recordService.updateRecord(
+      recordId,
+      {'detail': detail.toJson()},
+    );
     switch (result) {
       case Ok<void>():
         return Result.ok(null);
