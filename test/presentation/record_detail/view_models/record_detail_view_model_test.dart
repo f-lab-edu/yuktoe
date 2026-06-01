@@ -149,7 +149,7 @@ void main() {
         diaperType: DiaperType.poop,
       );
       when(mockRepo.updateRecord('rec-1', newDetail))
-          .thenAnswer((_) async => Result.error(AppException('수정 실패')));
+          .thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, '수정 실패')));
 
       final vm = makeVm();
       vm.stageDetail(newDetail);
@@ -182,7 +182,7 @@ void main() {
 
     test('failure: Idle → Loading(delete) → Failure', () async {
       when(mockRepo.deleteRecord('rec-1'))
-          .thenAnswer((_) async => Result.error(AppException('삭제 실패')));
+          .thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, '삭제 실패')));
 
       final vm = makeVm();
       await vm.deleteRecord();
@@ -195,7 +195,7 @@ void main() {
   group('clearError', () {
     test('Failure → Idle, notify', () async {
       when(mockRepo.deleteRecord('rec-1'))
-          .thenAnswer((_) async => Result.error(AppException('삭제 실패')));
+          .thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, '삭제 실패')));
       final vm = makeVm();
       await vm.deleteRecord();
       expect(vm.state, isA<RecordDetailFailure>());

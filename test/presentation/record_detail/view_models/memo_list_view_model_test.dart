@@ -78,7 +78,7 @@ void main() {
 
     test('failure: state becomes Failure', () async {
       when(mockRepo.getMemos(recordId, cursor: null, limit: 20))
-          .thenAnswer((_) async => Result.error(AppException('조회 실패')));
+          .thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, '조회 실패')));
       final vm = makeVm();
 
       await vm.refresh();
@@ -154,7 +154,7 @@ void main() {
 
     test('failure: list unchanged, state Failure, return false', () async {
       when(mockRepo.addMemo(recordId, '새 메모'))
-          .thenAnswer((_) async => Result.error(AppException('추가 실패')));
+          .thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, '추가 실패')));
 
       final vm = makeVm();
       final ok = await vm.addMemo('새 메모');
@@ -214,7 +214,7 @@ void main() {
   group('clearError', () {
     test('Failure → Idle, notify', () async {
       when(mockRepo.getMemos(recordId, cursor: null, limit: 20))
-          .thenAnswer((_) async => Result.error(AppException('fail')));
+          .thenAnswer((_) async => Result.error(AppException(ErrorCode.unknown, 'fail')));
       final vm = makeVm();
       await vm.refresh();
 

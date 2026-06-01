@@ -96,7 +96,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('조회 실패');
+      final exception = AppException(ErrorCode.unknown, '조회 실패');
       when(mockService.getRecord('record-1'))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -130,7 +130,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('수정 실패');
+      final exception = AppException(ErrorCode.unknown, '수정 실패');
       updateResult = Result.error(exception);
 
       // when
@@ -160,7 +160,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('삭제 실패');
+      final exception = AppException(ErrorCode.unknown, '삭제 실패');
       when(mockService.deleteRecord('record-1'))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -282,7 +282,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('메모 조회 실패');
+      final exception = AppException(ErrorCode.unknown, '메모 조회 실패');
       when(mockService.getMemos(recordId, cursor: null, limit: 20))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -322,7 +322,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('메모 생성 실패');
+      final exception = AppException(ErrorCode.unknown, '메모 생성 실패');
       when(mockService.createMemo(recordId, content))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -353,7 +353,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('메모 수정 실패');
+      final exception = AppException(ErrorCode.unknown, '메모 수정 실패');
       when(mockService.updateMemo(memoId, content))
           .thenAnswer((_) async => Result.error(exception));
 
@@ -383,7 +383,7 @@ void main() {
 
     test('returns Error when service returns Error', () async {
       // given
-      final exception = AppException('메모 삭제 실패');
+      final exception = AppException(ErrorCode.unknown, '메모 삭제 실패');
       when(mockService.deleteMemo(memoId))
           .thenAnswer((_) async => Result.error(exception));
 

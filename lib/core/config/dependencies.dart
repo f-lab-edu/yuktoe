@@ -1,7 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:yuktoe/core/auth/session_manager.dart';
 import 'package:yuktoe/core/config/app_env.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository_impl.dart';
@@ -28,9 +27,6 @@ List<SingleChildWidget> buildDependencies() {
     Provider<AuthRepository>(
       create: (context) => AuthRepositoryImpl(context.read<AuthService>()),
     ),
-    ChangeNotifierProvider<SessionManager>(
-      create: (context) => SessionManager(context.read<AuthRepository>()),
-    ),
     Provider<RecordService>(
       create: (context) =>
           SupabaseRecordService(client: context.read<SupabaseClient>()),
@@ -38,6 +34,7 @@ List<SingleChildWidget> buildDependencies() {
     Provider<RecordRepository>(
       create: (context) =>
           RecordRepositoryImpl(context.read<RecordService>()),
+    ),
     Provider<BabyRegistrationService>(
       create: (context) => SupabaseBabyRegistrationService(
         client: context.read<SupabaseClient>(),
