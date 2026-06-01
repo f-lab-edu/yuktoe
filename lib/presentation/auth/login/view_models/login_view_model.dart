@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:yuktoe/common/utils/action_state.dart';
+import 'package:yuktoe/constants/app_strings.dart';
 import 'package:yuktoe/constants/enum/social_auth_provider.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
@@ -9,8 +11,9 @@ class LoginViewModel extends ChangeNotifier {
 
   LoginViewModel(this._authRepository);
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  ActionState _state = ActionState.idle;
+  ActionState get state => _state;
+  bool get isLoading => _state == ActionState.loading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -21,9 +24,9 @@ class LoginViewModel extends ChangeNotifier {
   bool get isLoggedIn => _session != null;
 
   Future<void> signIn(SocialAuthProvider provider) async {
-    if (_isLoading) return;
+    if (_state == ActionState.loading) return;
 
-    _isLoading = true;
+    _state = ActionState.loading;
     _errorMessage = null;
     notifyListeners();
 
@@ -33,15 +36,17 @@ class LoginViewModel extends ChangeNotifier {
       switch (result) {
         case Ok<void>():
           _session = _authRepository.session;
+          _state = ActionState.success;
         case Error<void>():
           _session = null;
-          _errorMessage = result.error.message;
+          _state = ActionState.error;
+          _errorMessage = AppStrings.genericError;
       }
     } catch (e) {
       _session = null;
-      _errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
+      _state = ActionState.error;
+      _errorMessage = AppStrings.genericError;
     } finally {
-      _isLoading = false;
       notifyListeners();
     }
   }

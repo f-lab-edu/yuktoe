@@ -28,7 +28,7 @@ class SupabaseAuthService implements AuthService {
       return Result.ok(_mapSession(session));
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to get current session', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to get current session', cause: e),
       );
     }
   }
@@ -46,7 +46,9 @@ class SupabaseAuthService implements AuthService {
       }
       return Result.ok(null);
     } on Exception catch (e) {
-      return Result.error(AppException('Failed to sign in', cause: e));
+      return Result.error(
+        AppException(ErrorCode.unknown, 'Failed to sign in with ${provider.name}', cause: e),
+      );
     }
   }
 
@@ -56,7 +58,9 @@ class SupabaseAuthService implements AuthService {
       await _client.auth.signOut();
       return Result.ok(null);
     } on Exception catch (e) {
-      return Result.error(AppException('Failed to sign out', cause: e));
+      return Result.error(
+        AppException(ErrorCode.unknown, 'Failed to sign out', cause: e),
+      );
     }
   }
 
@@ -76,7 +80,7 @@ class SupabaseAuthService implements AuthService {
         await googleUser.authorizationClient.authorizeScopes(scopes);
     final idToken = googleUser.authentication.idToken;
     if (idToken == null) {
-      throw AppException('Google ID 토큰을 받지 못했습니다.');
+      throw AppException(ErrorCode.invalidResponse, 'Google ID token was null');
     }
 
     await _client.auth.signInWithIdToken(
@@ -97,7 +101,7 @@ class SupabaseAuthService implements AuthService {
 
     final idToken = token.idToken;
     if (idToken == null) {
-      throw AppException('카카오 ID 토큰을 받지 못했습니다. ');
+      throw AppException(ErrorCode.invalidResponse, 'Kakao ID token was null');
     }
 
     await _client.auth.signInWithIdToken(
