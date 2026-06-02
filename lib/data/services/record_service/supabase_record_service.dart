@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
@@ -50,12 +52,19 @@ class SupabaseRecordService implements RecordService {
   @override
   Future<Result<void>> deleteRecord(String recordId) async {
     try {
-      await _client.from('care_records').delete().eq('id', recordId);
+      final affected = await _client
+          .from('care_records')
+          .delete()
+          .eq('id', recordId)
+          .select();
+      if (affected.isEmpty) {
+        return Result.error(
+          AppException(ErrorCode.notFound, 'Record not found: $recordId'),
+        );
+      }
       return Result.ok(null);
-    } on Exception catch (e) {
-      return Result.error(
-        AppException(ErrorCode.unknown, 'Failed to delete record', cause: e),
-      );
+    } catch (e) {
+      return Result.error(_classify(e, 'Failed to delete record'));
     }
   }
 
@@ -147,6 +156,110 @@ class SupabaseRecordService implements RecordService {
     }
   }
 
+  @override
+  Future<Result<Page<CareRecord>>> getRecords(
+    String babyId, {
+    String? cursor,
+    required int limit,
+  }) async {
+    try {
+      var query = _client
+          .from('care_records')
+          .select()
+          .eq('baby_id', babyId);
+
+      if (cursor != null) {
+        query = query.lt('id', cursor);
+      }
+
+      final data = await query
+          .order('occurred_at', ascending: false)
+          .order('id', ascending: false)
+          .limit(limit + 1);
+
+      final hasMore = data.length > limit;
+      final pageRows = hasMore ? data.sublist(0, limit) : data;
+      final items = pageRows.map(_mapRecord).toList();
+      final nextCursor = hasMore ? items.last.id : null;
+
+      return Result.ok(
+        Page(items: items, nextCursor: nextCursor, hasMore: hasMore),
+      );
+    } catch (e) {
+      return Result.error(_classify(e, 'Failed to get records'));
+    }
+  }
+
+  @override
+  Future<Result<List<CareRecord>>> getRecentRecords(
+    String babyId, {
+    required Set<RecordType> types,
+    required RecordOrderKey orderKey,
+    required int limit,
+  }) async {
+    try {
+      final column = orderKey.column;
+      final data = await _client
+          .from('care_records')
+          .select()
+          .eq('baby_id', babyId)
+          .inFilter('type', types.map((t) => t.name).toList())
+          .not(column, 'is', null)
+          .order(column, ascending: false)
+          .order('id', ascending: false)
+          .limit(limit);
+
+      final items = data.map(_mapRecord).toList();
+      return Result.ok(items);
+    } catch (e) {
+      return Result.error(_classify(e, 'Failed to get recent records'));
+    }
+  }
+
+  @override
+  Future<Result<CareRecord>> createRecord(
+    String babyId,
+    RecordDetailData detail,
+  ) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      return Result.error(
+        const AppException(ErrorCode.unauthorized, 'Not signed in'),
+      );
+    }
+    try {
+      final inserted = await _client
+          .from('care_records')
+          .insert({
+            'baby_id': babyId,
+            'type': _typeOf(detail).name,
+            'detail': detail.toJson(),
+            'created_by': userId,
+          })
+          .select()
+          .single();
+
+      return Result.ok(_mapRecord(inserted));
+    } catch (e) {
+      return Result.error(_classify(e, 'Failed to create record'));
+    }
+  }
+
+  /// `RecordDetailData` 의 sealed 변종으로부터 `RecordType` 을 끌어낸다.
+  /// spec §3 에 따르면 카테고리의 SOT 는 detail 의 실제 하위 클래스다.
+  /// (`RecordDetailData.type` 추상 getter 추가는 spec §11 후속 PR 의 항목.)
+  RecordType _typeOf(RecordDetailData detail) => switch (detail) {
+        BreastDetail() => RecordType.breast,
+        SleepDetail() => RecordType.sleep,
+        PumpingDetail() => RecordType.pumping,
+        PumpingFeedDetail() => RecordType.pumpingFeed,
+        FormulaDetail() => RecordType.formula,
+        DiaperDetail() => RecordType.diaper,
+        BabyFoodDetail() => RecordType.babyFood,
+        SnackDetail() => RecordType.snack,
+        WaterDetail() => RecordType.water,
+      };
+
   CareRecord _mapRecord(Map<String, dynamic> data) {
     final type = RecordType.values.byName(data['type'] as String);
     final detail = RecordDetailData.fromJson(
@@ -175,5 +288,19 @@ class SupabaseRecordService implements RecordService {
       authorName: memberData?['nickname'] as String? ?? '',
       createdAt: DateTime.parse(data['created_at'] as String),
     );
+  }
+
+  /// 신규 메서드 한정 — spec §6 / §7 의 에러 코드 분기.
+  AppException _classify(Object e, String message) {
+    if (e is AuthException) {
+      return AppException(ErrorCode.unauthorized, message, cause: e);
+    }
+    if (e is PostgrestException || e is SocketException) {
+      return AppException(ErrorCode.networkError, message, cause: e);
+    }
+    if (e is FormatException || e is TypeError || e is ArgumentError) {
+      return AppException(ErrorCode.parseFailed, message, cause: e);
+    }
+    return AppException(ErrorCode.unknown, message, cause: e);
   }
 }

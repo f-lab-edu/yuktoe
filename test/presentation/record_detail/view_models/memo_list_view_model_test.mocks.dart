@@ -146,4 +146,97 @@ class MockRecordRepository extends _i1.Mock implements _i2.RecordRepository {
             ),
           )
           as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<_i8.Page<_i5.CareRecord>>> getRecords(
+    String? babyId, {
+    String? cursor,
+    int? limit = 20,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getRecords,
+              [babyId],
+              {#cursor: cursor, #limit: limit},
+            ),
+            returnValue: _i3.Future<_i4.Result<_i8.Page<_i5.CareRecord>>>.value(
+              _i6.dummyValue<_i4.Result<_i8.Page<_i5.CareRecord>>>(
+                this,
+                Invocation.method(
+                  #getRecords,
+                  [babyId],
+                  {#cursor: cursor, #limit: limit},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i8.Page<_i5.CareRecord>>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i5.CareRecord>>> getRecentFeedings(
+    String? babyId, {
+    int? limit = 2,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getRecentFeedings, [babyId], {#limit: limit}),
+            returnValue: _i3.Future<_i4.Result<List<_i5.CareRecord>>>.value(
+              _i6.dummyValue<_i4.Result<List<_i5.CareRecord>>>(
+                this,
+                Invocation.method(
+                  #getRecentFeedings,
+                  [babyId],
+                  {#limit: limit},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<List<_i5.CareRecord>>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i5.CareRecord>>> getRecentDiapers(
+    String? babyId, {
+    int? limit = 2,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getRecentDiapers, [babyId], {#limit: limit}),
+            returnValue: _i3.Future<_i4.Result<List<_i5.CareRecord>>>.value(
+              _i6.dummyValue<_i4.Result<List<_i5.CareRecord>>>(
+                this,
+                Invocation.method(#getRecentDiapers, [babyId], {#limit: limit}),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<List<_i5.CareRecord>>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i5.CareRecord>>> getRecentWakes(
+    String? babyId, {
+    int? limit = 2,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#getRecentWakes, [babyId], {#limit: limit}),
+            returnValue: _i3.Future<_i4.Result<List<_i5.CareRecord>>>.value(
+              _i6.dummyValue<_i4.Result<List<_i5.CareRecord>>>(
+                this,
+                Invocation.method(#getRecentWakes, [babyId], {#limit: limit}),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<List<_i5.CareRecord>>>);
+
+  @override
+  _i3.Future<_i4.Result<_i5.CareRecord>> createRecord(
+    String? babyId,
+    _i7.RecordDetailData? detail,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#createRecord, [babyId, detail]),
+            returnValue: _i3.Future<_i4.Result<_i5.CareRecord>>.value(
+              _i6.dummyValue<_i4.Result<_i5.CareRecord>>(
+                this,
+                Invocation.method(#createRecord, [babyId, detail]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i5.CareRecord>>);
 }
