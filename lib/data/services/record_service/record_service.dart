@@ -5,8 +5,6 @@ import 'package:yuktoe/domain/models/record/care_record.dart';
 import 'package:yuktoe/domain/models/record/record_detail_data.dart';
 import 'package:yuktoe/domain/models/record/record_memo.dart';
 
-/// "최근 N건" 조회의 정렬 기준 컬럼.
-/// home_data spec §12.4 의 generated column 들과 1:1 매핑된다.
 enum RecordOrderKey {
   occurredAt,
   endedAt,
@@ -20,7 +18,6 @@ enum RecordOrderKey {
 }
 
 abstract interface class RecordService {
-  // — 기존 (record_detail 용) —
   Future<Result<CareRecord>> getRecord(String recordId);
   Future<Result<void>> updateRecord(
     String recordId,
@@ -36,7 +33,6 @@ abstract interface class RecordService {
   Future<Result<void>> updateMemo(String memoId, String content);
   Future<Result<void>> deleteMemo(String memoId);
 
-  // — 신규 (home_data §7.3) —
   Future<Result<Page<CareRecord>>> getRecords(
     String babyId, {
     String? cursor,

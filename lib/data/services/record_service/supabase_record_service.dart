@@ -245,9 +245,6 @@ class SupabaseRecordService implements RecordService {
     }
   }
 
-  /// `RecordDetailData` 의 sealed 변종으로부터 `RecordType` 을 끌어낸다.
-  /// spec §3 에 따르면 카테고리의 SOT 는 detail 의 실제 하위 클래스다.
-  /// (`RecordDetailData.type` 추상 getter 추가는 spec §11 후속 PR 의 항목.)
   RecordType _typeOf(RecordDetailData detail) => switch (detail) {
         BreastDetail() => RecordType.breast,
         SleepDetail() => RecordType.sleep,
@@ -290,7 +287,6 @@ class SupabaseRecordService implements RecordService {
     );
   }
 
-  /// 신규 메서드 한정 — spec §6 / §7 의 에러 코드 분기.
   AppException _classify(Object e, String message) {
     if (e is AuthException) {
       return AppException(ErrorCode.unauthorized, message, cause: e);
