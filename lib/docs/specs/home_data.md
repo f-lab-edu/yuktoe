@@ -775,6 +775,7 @@ Supabase SDK 의존성으로 Service 단위 테스트는 본 PR 에서 강제하
 - `lib/domain/models/common/page.dart` — 추가 사항 없음 (이미 제네릭 `Page<T>` + String? cursor 형태로 구현되어 있음)
 
 **신규 Repository / Service**
+
 - `lib/data/repositories/baby_repository/baby_repository.dart`
 - `lib/data/repositories/baby_repository/baby_repository_impl.dart`
 - `lib/data/services/baby_service/baby_service.dart`

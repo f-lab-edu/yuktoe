@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:yuktoe/core/config/app_env.dart';
 import 'package:yuktoe/core/config/dependencies.dart';
@@ -22,16 +23,20 @@ Future<void> main() async {
 
   KakaoSdk.init(nativeAppKey: AppEnv.kakaoNativeAppKey);
 
-  runApp(const MyApp());
+  final prefs = await SharedPreferences.getInstance();
+
+  runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences prefs;
+
+  const MyApp({required this.prefs, super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: buildDependencies(),
+      providers: buildDependencies(prefs: prefs),
       child: MaterialApp.router(
         title: 'Yuktoe',
         theme: ThemeData(
