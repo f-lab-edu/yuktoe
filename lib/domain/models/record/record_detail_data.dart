@@ -18,10 +18,12 @@ sealed class RecordDetailData {
     return switch (type) {
       RecordType.breast => BreastDetail.fromJson(json),
       RecordType.pumping => PumpingDetail.fromJson(json),
+      RecordType.pumpingFeed => PumpingFeedDetail.fromJson(json),
       RecordType.formula => FormulaDetail.fromJson(json),
       RecordType.sleep => SleepDetail.fromJson(json),
       RecordType.diaper => DiaperDetail.fromJson(json),
-      RecordType.supplement => SupplementDetail.fromJson(json),
+      RecordType.babyFood => BabyFoodDetail.fromJson(json),
+      RecordType.snack => SnackDetail.fromJson(json),
       RecordType.water => WaterDetail.fromJson(json),
     };
   }
@@ -44,6 +46,19 @@ class BreastDetail extends RecordDetailData {
   DateTime get occurredAt => startedAt;
 
   Duration get duration => endedAt.difference(startedAt);
+
+  BreastDetail copyWith({
+    DateTime? startedAt,
+    DateTime? endedAt,
+    int? leftMinutes,
+    int? rightMinutes,
+  }) =>
+      BreastDetail(
+        startedAt: startedAt ?? this.startedAt,
+        endedAt: endedAt ?? this.endedAt,
+        leftMinutes: leftMinutes ?? this.leftMinutes,
+        rightMinutes: rightMinutes ?? this.rightMinutes,
+      );
 
   @override
   Map<String, dynamic> toJson() => {
@@ -77,6 +92,17 @@ class SleepDetail extends RecordDetailData {
 
   Duration get duration => endedAt.difference(startedAt);
 
+  SleepDetail copyWith({
+    DateTime? startedAt,
+    DateTime? endedAt,
+    SleepType? sleepType,
+  }) =>
+      SleepDetail(
+        startedAt: startedAt ?? this.startedAt,
+        endedAt: endedAt ?? this.endedAt,
+        sleepType: sleepType ?? this.sleepType,
+      );
+
   @override
   Map<String, dynamic> toJson() => {
         'started_at': startedAt.toIso8601String(),
@@ -94,9 +120,55 @@ class SleepDetail extends RecordDetailData {
 class PumpingDetail extends RecordDetailData {
   @override
   final DateTime occurredAt;
+  final int? leftAmountMl;
+  final int? rightAmountMl;
+
+  const PumpingDetail({
+    required this.occurredAt,
+    this.leftAmountMl,
+    this.rightAmountMl,
+  });
+
+  PumpingDetail copyWith({
+    DateTime? occurredAt,
+    int? leftAmountMl,
+    int? rightAmountMl,
+  }) =>
+      PumpingDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        leftAmountMl: leftAmountMl ?? this.leftAmountMl,
+        rightAmountMl: rightAmountMl ?? this.rightAmountMl,
+      );
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'occurred_at': occurredAt.toIso8601String(),
+        'left_amount_ml': leftAmountMl,
+        'right_amount_ml': rightAmountMl,
+      };
+
+  factory PumpingDetail.fromJson(Map<String, dynamic> json) => PumpingDetail(
+        occurredAt: DateTime.parse(json['occurred_at'] as String),
+        leftAmountMl: json['left_amount_ml'] as int?,
+        rightAmountMl: json['right_amount_ml'] as int?,
+      );
+}
+
+class PumpingFeedDetail extends RecordDetailData {
+  @override
+  final DateTime occurredAt;
   final int amountMl;
 
-  const PumpingDetail({required this.occurredAt, required this.amountMl});
+  const PumpingFeedDetail({
+    required this.occurredAt,
+    required this.amountMl,
+  });
+
+  PumpingFeedDetail copyWith({DateTime? occurredAt, int? amountMl}) =>
+      PumpingFeedDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        amountMl: amountMl ?? this.amountMl,
+      );
 
   @override
   Map<String, dynamic> toJson() => {
@@ -104,7 +176,8 @@ class PumpingDetail extends RecordDetailData {
         'amount_ml': amountMl,
       };
 
-  factory PumpingDetail.fromJson(Map<String, dynamic> json) => PumpingDetail(
+  factory PumpingFeedDetail.fromJson(Map<String, dynamic> json) =>
+      PumpingFeedDetail(
         occurredAt: DateTime.parse(json['occurred_at'] as String),
         amountMl: json['amount_ml'] as int,
       );
@@ -116,6 +189,12 @@ class FormulaDetail extends RecordDetailData {
   final int amountMl;
 
   const FormulaDetail({required this.occurredAt, required this.amountMl});
+
+  FormulaDetail copyWith({DateTime? occurredAt, int? amountMl}) =>
+      FormulaDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        amountMl: amountMl ?? this.amountMl,
+      );
 
   @override
   Map<String, dynamic> toJson() => {
@@ -136,6 +215,12 @@ class DiaperDetail extends RecordDetailData {
 
   const DiaperDetail({required this.occurredAt, required this.diaperType});
 
+  DiaperDetail copyWith({DateTime? occurredAt, DiaperType? diaperType}) =>
+      DiaperDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        diaperType: diaperType ?? this.diaperType,
+      );
+
   @override
   Map<String, dynamic> toJson() => {
         'occurred_at': occurredAt.toIso8601String(),
@@ -148,12 +233,54 @@ class DiaperDetail extends RecordDetailData {
       );
 }
 
-class SupplementDetail extends RecordDetailData {
+class BabyFoodDetail extends RecordDetailData {
+  @override
+  final DateTime occurredAt;
+  final String name;
+  final int amountMl;
+
+  const BabyFoodDetail({
+    required this.occurredAt,
+    required this.name,
+    required this.amountMl,
+  });
+
+  BabyFoodDetail copyWith({
+    DateTime? occurredAt,
+    String? name,
+    int? amountMl,
+  }) =>
+      BabyFoodDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        name: name ?? this.name,
+        amountMl: amountMl ?? this.amountMl,
+      );
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'occurred_at': occurredAt.toIso8601String(),
+        'name': name,
+        'amount_ml': amountMl,
+      };
+
+  factory BabyFoodDetail.fromJson(Map<String, dynamic> json) => BabyFoodDetail(
+        occurredAt: DateTime.parse(json['occurred_at'] as String),
+        name: json['name'] as String,
+        amountMl: json['amount_ml'] as int,
+      );
+}
+
+class SnackDetail extends RecordDetailData {
   @override
   final DateTime occurredAt;
   final String name;
 
-  const SupplementDetail({required this.occurredAt, required this.name});
+  const SnackDetail({required this.occurredAt, required this.name});
+
+  SnackDetail copyWith({DateTime? occurredAt, String? name}) => SnackDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        name: name ?? this.name,
+      );
 
   @override
   Map<String, dynamic> toJson() => {
@@ -161,8 +288,7 @@ class SupplementDetail extends RecordDetailData {
         'name': name,
       };
 
-  factory SupplementDetail.fromJson(Map<String, dynamic> json) =>
-      SupplementDetail(
+  factory SnackDetail.fromJson(Map<String, dynamic> json) => SnackDetail(
         occurredAt: DateTime.parse(json['occurred_at'] as String),
         name: json['name'] as String,
       );
@@ -174,6 +300,11 @@ class WaterDetail extends RecordDetailData {
   final int amountMl;
 
   const WaterDetail({required this.occurredAt, required this.amountMl});
+
+  WaterDetail copyWith({DateTime? occurredAt, int? amountMl}) => WaterDetail(
+        occurredAt: occurredAt ?? this.occurredAt,
+        amountMl: amountMl ?? this.amountMl,
+      );
 
   @override
   Map<String, dynamic> toJson() => {

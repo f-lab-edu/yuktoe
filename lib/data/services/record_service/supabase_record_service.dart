@@ -27,7 +27,7 @@ class SupabaseRecordService implements RecordService {
       return Result.ok(_mapRecord(data));
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to get record', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to get record', cause: e),
       );
     }
   }
@@ -42,7 +42,7 @@ class SupabaseRecordService implements RecordService {
       return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to update record', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to update record', cause: e),
       );
     }
   }
@@ -54,7 +54,7 @@ class SupabaseRecordService implements RecordService {
       return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to delete record', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to delete record', cause: e),
       );
     }
   }
@@ -90,7 +90,7 @@ class SupabaseRecordService implements RecordService {
       );
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to get memos', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to get memos', cause: e),
       );
     }
   }
@@ -115,7 +115,7 @@ class SupabaseRecordService implements RecordService {
       return Result.ok(_mapMemo(data));
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to create memo', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to create memo', cause: e),
       );
     }
   }
@@ -130,7 +130,7 @@ class SupabaseRecordService implements RecordService {
       return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to update memo', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to update memo', cause: e),
       );
     }
   }
@@ -142,7 +142,7 @@ class SupabaseRecordService implements RecordService {
       return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(
-        AppException('Failed to delete memo', cause: e),
+        AppException(ErrorCode.unknown, 'Failed to delete memo', cause: e),
       );
     }
   }

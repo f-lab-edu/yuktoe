@@ -34,6 +34,7 @@ List<SingleChildWidget> buildDependencies() {
     Provider<RecordRepository>(
       create: (context) =>
           RecordRepositoryImpl(context.read<RecordService>()),
+    ),
     Provider<BabyRegistrationService>(
       create: (context) => SupabaseBabyRegistrationService(
         client: context.read<SupabaseClient>(),
