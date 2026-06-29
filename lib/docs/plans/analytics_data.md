@@ -45,7 +45,7 @@ lib/docs/
 ├── specs/
 │   └── analytics_summary.md     # 분석 탭 spec (요약 + 채팅 carve-out)
 └── plans/
-    └── analytics_summary.md     # 이 문서 (데이터 레이어 plan)
+    └── analytics_data.md        # 이 문서 (데이터 레이어 plan)
 ```
 
 ### Source Code (repository root)
