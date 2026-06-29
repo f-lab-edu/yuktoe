@@ -327,7 +327,7 @@ home_data §8.1 의 정책을 그대로 적용한다.
 0. Complete 시점에 `running` 인 쪽이 있으면 그 시점까지의 누적 초로 자동 stop (그 쪽 phase 의 가시화는 생략, 곧장 step 1).
 1. UI 상 Complete 버튼 비활성 + 카드 상태 = `breast.saving` 또는 `sleep.saving` (중복 호출 방지).
 2. 누적 경과 시간을 카테고리별로 `RecordDetailData` 로 매핑:
-   - **breast**: 양쪽 누적 초를 `round(seconds/60)` 로 변환해 `leftMinutes` / `rightMinutes`. **그 쪽 phase 가 한 번도 `running` 으로 진입한 적 없음 (= 계속 `idle`) → `null`**. 한 번이라도 진입했으면 0 이상 int (0~29 초 = 0 분, 30~89 초 = 1 분, …). `startedAt` = 좌/우 `firstStartedAt` 중 non-null 의 min. `endedAt` = **Complete 누른 시점의 `DateTime.now().toUtc()`**. **시작·종료 시각은 UTC**.
+   - **breast**: 양쪽 누적 초를 `round(seconds/60)` 로 변환해 `leftMinutes` / `rightMinutes`. **그 쪽 phase 가 한 번도 `running` 으로 진입한 적 없음 (= 계속 `idle`) → `null`**. 한 번이라도 진입했으면 0 이상 int (0~29 초 = 0 분, 30~89 초 = 1 분, …). `startedAt` = **좌·우 통틀어 처음 `running` 에 진입한 시각** (단일 `startedAt`, §6.3). `endedAt` = **Complete 누른 시점의 `DateTime.now().toUtc()`**. **시작·종료 시각은 UTC**.
    - **sleep**: `startedAt` = 처음 `running` 진입 시각, `endedAt` = Complete 누른 시각, `sleepType` = §6.4 의 디폴트 규칙.
 3. `RecordRepository.createRecord(currentBabyId, detail)` 호출.
 4. 응답에 따라:
@@ -508,9 +508,10 @@ home_data §8.1 의 정책을 그대로 적용한다.
   - phase 가 한 번도 `running` 으로 진입한 적 없음 (= 계속 `idle`) → `null`.
   - 한 번이라도 `running` 으로 진입했음 → `0` 이상의 int (0 도 허용).
 
-- 좌 / 우 각자 시작 시각도 메모리에 보관:
-  - `leftFirstStartedAt`, `rightFirstStartedAt` — 처음 `running` 진입 시각 (UTC). 한 번도 진입 안 했으면 `null`.
-- `BreastDetail.startedAt` = 두 `firstStartedAt` 중 non-null 의 min. (둘 다 null 이면 Complete 비활성이므로 도달 불가.)
+- 시작 시각은 **단일 `startedAt` 하나만** 메모리에 보관한다:
+  - `startedAt` — 좌·우 통틀어 **처음으로 `running` 에 진입한 순간** 한 번만 세팅(UTC). 이미 세팅돼 있으면 이후 pause/resume/측 전환에도 바꾸지 않는다. 한 번도 진입 안 했으면 `null`(이 경우 Complete 비활성이라 저장에 도달하지 않음).
+  - 좌/우 각각의 시작 시각을 따로 둘 필요는 없다 — `BreastDetail` 은 좌/우 **소요 분**(`leftMinutes`/`rightMinutes`)만 따로 갖고 시작 시각 필드는 `startedAt` 하나뿐이며(home_data §3.3), 소요 분은 누적 초로 계산되지 시작 시각으로 계산되지 않는다. "두 시작 시각 중 이른 쪽" 은 곧 "처음 running 진입 시각" 과 같다.
+- `BreastDetail.startedAt` = 위 `startedAt`.
 - `BreastDetail.endedAt` = **Complete 누른 시점의 `DateTime.now().toUtc()`**. (양쪽 모두 paused 인 상태나 한쪽 running 인 상태에서 Complete 를 눌렀을 때도 endedAt 이 명확히 정의됨.)
 
 ### 6.4 수면 스탑워치 — sleepType 자동 결정
@@ -685,7 +686,8 @@ HomeScreen (StatelessWidget)
        ├─ ChangeNotifierProvider<HomeBabyInfoViewModel>
        ├─ ChangeNotifierProvider<RecentSnapshotViewModel>
        ├─ ChangeNotifierProvider<RecordTimelineViewModel>
-       ├─ ChangeNotifierProvider<StopwatchViewModel>
+       ├─ ChangeNotifierProvider<BreastStopwatchViewModel>
+       ├─ ChangeNotifierProvider<SleepStopwatchViewModel>
        └─ ChangeNotifierProvider<QuickLogButtonsViewModel>
 ```
 
@@ -701,9 +703,9 @@ HomeScreen (StatelessWidget)
 
 - 상태:
   - `_status: ActionState<Baby>` (Idle / Loading / Success(Baby) / Failure(AppException))
-- 메서드:
-  - `load(babyId)` — 호출자 (HomeScreen / CurrentBabyController 리스너) 가 babyId 전달.
-  - `retry()` — 마지막 babyId 로 재호출.
+- 메서드 (babyId 인자 없음 — VM 이 주입된 `CurrentBabyController` 에서 현재 babyId 를 읽는다):
+  - `load()` — 현재 babyId 로 `getBaby`.
+  - `retry()` — 현재 babyId 로 재호출.
 - 노출 derived 값:
   - `String? get name`
   - `String? get dateLabel` — D+N / D-N / D-Day / null (§3.2)
@@ -714,8 +716,8 @@ HomeScreen (StatelessWidget)
   - `_feedState: ActionState<CareRecord?>` (null = empty)
   - `_diaperState: ActionState<CareRecord?>`
   - `_wakeState: ActionState<CareRecord?>`
-- 메서드:
-  - `loadAll(babyId)`
+- 메서드 (babyId 인자 없음 — 현재 babyId 는 `CurrentBabyController` 에서 읽음):
+  - `loadAll()`
   - `retryFeed()` / `retryDiaper()` / `retryWake()` — 각자 슬롯.
   - `notifyAfterRecordChanged(record)` — 생성/삭제 후 어느 슬롯에 영향이 있는지 결정 후 그 슬롯 재호출.
 
@@ -727,31 +729,34 @@ HomeScreen (StatelessWidget)
   - `_nextPageState: ActionState<void>` (다음 페이지)
   - `_nextCursor: String?`
   - `_hasMore: bool`
-- 메서드:
-  - `loadFirstPage(babyId)`
-  - `loadNextPage(babyId)`
-  - `refresh(babyId)` — pull-to-refresh
-  - `prepend(record)`
-  - `remove(recordId)` — 삭제 동기
-  - `removeAndDelete(recordId, babyId)` — 삭제 요청 + 결과 분기
+- 메서드 (babyId 인자 없음 — 현재 babyId 는 `CurrentBabyController` 에서 읽음):
+  - `loadFirstPage()`
+  - `loadNextPage()`
+  - `refresh()` — pull-to-refresh
+  - `prepend(record)` — 생성 반영(맨 앞에 추가, id dedupe)
+  - `deleteRecord(recordId)` — 삭제 요청 + 결과 분기. `RecordRepository.deleteRecord(recordId)` 호출 후: `Ok`/`notFound` → 리스트에서 제거, `unauthorized` → 화면이 §4.2 전역 분기, 그 외 → 리스트 유지 + 스낵바. 리스트 제거는 VM 내부 private 헬퍼로만 수행한다.
 - prefetch trigger 는 위젯 (ScrollController) 에서 결정 → ViewModel.`loadNextPage` 호출.
 
-### 11.4 `StopwatchViewModel` ([D])
+> 이전 설계의 `remove(recordId)`(서버 호출 없는 로컬 제거)와 `removeAndDelete(recordId, babyId)` 는 `deleteRecord(recordId)` 하나로 통합했다. 본 PR 범위에서 "서버 삭제 없이 리스트만 제거" 를 부르는 외부 호출자가 없고(상세 화면은 범위 밖, 복귀 시 재호출 없음 — §1.2·§6.6), `deleteRecord` 의 계약은 `recordId` 만 받으므로(home_data §6.10) babyId 인자도 제거했다.
 
-- 메모리 상태:
-  - `_mode: StopwatchMode` (`inactive` / `breast` / `sleep`)
-  - 모유수유: `_leftSeconds`, `_rightSeconds`, `_leftPhase` (`idle` / `running` / `paused`), `_rightPhase` (동일), `_leftFirstStartedAt`, `_rightFirstStartedAt`.
-  - 수면: `_sleepSeconds`, `_sleepPhase` (`idle` / `running` / `paused`), `_sleepFirstStartedAt`.
-  - `_saveState: ActionState<CareRecord>` — Complete 후 저장 진행 (Idle / Loading / Failure 만 의미 있게 사용; 성공 시 카드가 `inactive` 로 복귀).
-- Ticker — `Stream.periodic(1s)` 또는 위젯이 보유한 `Ticker` 가 ViewModel 의 `tick()` 호출.
-- 메서드:
-  - `enterBreast()` / `enterSleep()` — `[B]` 버튼 탭에 대응. 진입 직후 phase 는 모두 `idle`.
-  - `toggleLeft()` / `toggleRight()` — `idle/paused → running` 또는 `running → paused`. `running` 으로 전환 시 다른 쪽이 `running` 이었으면 그 쪽을 자동으로 `paused`.
-  - `toggleSleep()` — sleep 단일 row 의 토글 (`idle → running`, `running ↔ paused`).
-  - `completeBreast()` / `completeSleep()` — 저장 흐름 (§5.3.4).
-  - `retryAfterFailure()` — `saveFailed` 상태에서 step 3 재시도.
-  - `discardAfterFailure()` — §8.1 의 "버리기" → `inactive`.
-  - `tryNavigate()` / `tryRouteChange()` — §5.3.6 dialog 트리거 결과를 위젯이 받아 처리.
+### 11.4 스탑워치 ViewModel — `BreastStopwatchViewModel` / `SleepStopwatchViewModel` ([D])
+
+모유수유와 수면은 보유 필드·전이·저장 변환이 서로 달라(모유수유 = 좌/우 2채널, 수면 = 단일 채널), **두 ViewModel 로 분리**한다. 각 VM 은 자기 한 종류만 안다. 기존의 sealed `StopwatchMode(inactive/breast/sleep)` 는 더 이상 필요 없어 두지 않는다.
+
+**단일 활성(스탑워치는 한 번에 하나만)은 화면이 중재**한다(§5.3.5 충돌 dialog / §5.3.6 이동 dialog). 화면은 두 VM 의 `bool active` 를 보고 활성 카드 하나만 렌더하며, 두 VM 을 동일하게 다루기 위한 얇은 공통 인터페이스(`bool active`, `bool hasElapsed`, `completeForSwitch()`, `discard()`, `keepForNavigate()`)를 둔다.
+
+공통:
+- `SaveStatus { idle, saving, failed }` + `AppException? _saveError` — Complete 후 저장 진행. 성공 시 카드가 사라짐(`active=false`).
+- Ticker — `Stream.periodic(1s)` 구독 보유, 표시값은 매 tick wall-clock 차이로 재계산(§8.1). `dispose()` 에서 cancel.
+- `createRecord` 대상 babyId — 구독하지 않고 Complete 시점에 `currentBabyController.selectedBabyId` 를 동기로 읽는다(§6.7).
+
+`BreastStopwatchViewModel`:
+- 메모리 상태: `bool _active`, `_leftSeconds` / `_rightSeconds`, `_leftPhase` / `_rightPhase` (`idle/running/paused`), **`DateTime? _startedAt`** (단일 — §6.3), 각 phase 의 `running` 진입 wall-clock 기준점, `SaveStatus _saveStatus`, `AppException? _saveError`.
+- 메서드: `enter()`(카드 노출, 좌/우 idle), `toggleLeft()` / `toggleRight()`(`running` 전환 시 다른 쪽이 running 이면 자동 paused), `complete()`(저장 §5.3.4), `retry()` / `discard()`, 화면 중재용 `completeForSwitch()` / `keepForNavigate()`.
+
+`SleepStopwatchViewModel`:
+- 메모리 상태: `bool _active`, `_seconds`, `_phase` (`idle/running/paused`), **`DateTime? _startedAt`**, `running` 진입 기준점, `SaveStatus _saveStatus`, `AppException? _saveError`.
+- 메서드: `enter()`(→ idle, Start 대기), `toggle()`(`idle → running`, `running ↔ paused`), `complete()`(§5.3.4), `retry()` / `discard()`, 화면 중재용 `completeForSwitch()` / `keepForNavigate()`.
 
 ### 11.5 `QuickLogButtonsViewModel` ([B])
 
@@ -811,12 +816,13 @@ lib/presentation/home/
 │   ├─ home_baby_info_view_model.dart
 │   ├─ recent_snapshot_view_model.dart
 │   ├─ record_timeline_view_model.dart
-│   ├─ stopwatch_view_model.dart
+│   ├─ breast_stopwatch_view_model.dart
+│   ├─ sleep_stopwatch_view_model.dart
 │   └─ quick_log_buttons_view_model.dart
 ├─ models/
 │   ├─ quick_log_button.dart              — type + enabled + 순서
-│   ├─ stopwatch_mode.dart                — sealed (inactive / breast / sleep)
 │   └─ recent_slot_state.dart
+│   (※ sealed stopwatch_mode 는 VM 분리로 불필요 — 두지 않음)
 └─ formatters/
     ├─ date_label_formatter.dart
     ├─ relative_time_formatter.dart
@@ -862,8 +868,10 @@ lib/presentation/home/
 
 - `HomeBabyInfoViewModel`: load 성공 / notFound / unauthorized / 그 외 에러 / retry.
 - `RecentSnapshotViewModel`: 세 슬롯 각각 success / empty / error / retry 개별 동작. `notifyAfterRecordChanged` 가 type → 슬롯 매핑을 정확히 한다.
-- `RecordTimelineViewModel`: 첫 페이지 / 다음 페이지 / 빈 페이지 / hasMore=false 이후 호출 안 함 / prepend / remove / refresh / 중복 호출 차단.
-- `StopwatchViewModel`: 모든 §4.1 의 state 전이, Complete 시 분 변환 (`leftSeconds = 29 → 0min`, `30 → 1min`, `90 → 2min` 등), `null` vs `0` 분기, **좌·우 phase 자동 paused 전환 (한쪽 running 중 다른쪽 toggle → 기존쪽 paused)**, **양쪽 phase 가 동시에 running 인 상태가 만들어지지 않음을 검증**, **sleep.idle 진입 → Start → running 흐름**, **누적 0 초 상태에서 다른 모드 진입 시 저장 없이 dismiss**, sleep 의 sleepType 자동 결정, baby 전환 dialog 결과별 동작.
+- `RecordTimelineViewModel`: 첫 페이지 / 다음 페이지 / 빈 페이지 / hasMore=false 이후 호출 안 함 / prepend / `deleteRecord` 결과 분기(Ok·notFound → 제거, 그 외 → 유지) / refresh / 중복 호출 차단. (메서드는 babyId 인자 없이 `CurrentBabyController` 에서 읽음)
+- `BreastStopwatchViewModel`: §4.1 의 breast state 전이, Complete 시 분 변환 (`leftSeconds = 29 → 0min`, `30 → 1min`, `90 → 2min` 등), `null` vs `0` 분기, **좌·우 phase 자동 paused 전환 (한쪽 running 중 다른쪽 toggle → 기존쪽 paused)**, **양쪽 phase 가 동시에 running 인 상태가 만들어지지 않음을 검증**, **단일 `startedAt` 이 처음 running 진입 시 1회만 세팅**, 저장 실패 → retry / discard.
+- `SleepStopwatchViewModel`: `idle → Start → running` 흐름, pause / resume, sleepType 자동 결정, **누적 0 초 상태에서 discard 시 저장 없이 dismiss**, 저장 실패 → retry / discard.
+- (스탑워치 단일 활성 / 충돌·이동 dialog 중재는 화면 책임 → §14.3 위젯 테스트.)
 - `QuickLogButtonsViewModel`: default / 저장된 JSON 로드 / reorder 후 영속 / toggle / 마지막 1 개 비활성 / 미지 enum 무시 / 누락 enum 추가.
 
 ### 14.3 위젯 테스트
@@ -895,7 +903,8 @@ lib/presentation/home/
 - `test/presentation/home/view_models/home_baby_info_view_model_test.dart`
 - `test/presentation/home/view_models/recent_snapshot_view_model_test.dart`
 - `test/presentation/home/view_models/record_timeline_view_model_test.dart`
-- `test/presentation/home/view_models/stopwatch_view_model_test.dart`
+- `test/presentation/home/view_models/breast_stopwatch_view_model_test.dart`
+- `test/presentation/home/view_models/sleep_stopwatch_view_model_test.dart`
 - `test/presentation/home/view_models/quick_log_buttons_view_model_test.dart`
 - `test/data/local/app_local_storage_test.dart` — `quick_log_buttons` 케이스 추가.
 
@@ -911,7 +920,7 @@ lib/presentation/home/
 | D+N / D-Day 규칙 | birthDate 우선, 없으면 dueDate. 둘 다 null = 라벨 미표시 |
 | 일상기록 버튼 default | 9 종 전부 노출, §6.1 순서 |
 | 일상기록 버튼 커스터마이즈 영속 | `AppLocalStorage` 디바이스 로컬 |
-| 스탑워치 동시성 | 단일 슬롯 (breast OR sleep). 메모리 상태만 |
+| 스탑워치 동시성 | 한 번에 하나만 (breast OR sleep). `BreastStopwatchViewModel` / `SleepStopwatchViewModel` 로 분리하고 단일 활성은 화면이 중재. 메모리 상태만 |
 | 모유수유 좌/우 동작 | 좌·우 phase 모델. 한 쪽 running 중 다른 쪽 toggle → 기존 쪽 자동 paused. 양쪽 paused 허용. Complete 는 카드 footer 단일 버튼 (양쪽 동시 종료 + 저장) |
 | sleep 진입 | 버튼 탭 → sleep.idle (Start 명시적, breast 와 일관) |
 | 스탑워치 단위 변환 | UI 초, 저장 round 분 |
