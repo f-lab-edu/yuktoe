@@ -232,7 +232,7 @@ class SupabaseRecordService implements RecordService {
           .from('care_records')
           .insert({
             'baby_id': babyId,
-            'type': _typeOf(detail).name,
+            'type': detail.type.name,
             'detail': detail.toJson(),
             'created_by': userId,
           })
@@ -244,18 +244,6 @@ class SupabaseRecordService implements RecordService {
       return Result.error(_classify(e, 'Failed to create record'));
     }
   }
-
-  RecordType _typeOf(RecordDetailData detail) => switch (detail) {
-        BreastDetail() => RecordType.breast,
-        SleepDetail() => RecordType.sleep,
-        PumpingDetail() => RecordType.pumping,
-        PumpingFeedDetail() => RecordType.pumpingFeed,
-        FormulaDetail() => RecordType.formula,
-        DiaperDetail() => RecordType.diaper,
-        BabyFoodDetail() => RecordType.babyFood,
-        SnackDetail() => RecordType.snack,
-        WaterDetail() => RecordType.water,
-      };
 
   CareRecord _mapRecord(Map<String, dynamic> data) {
     final type = RecordType.values.byName(data['type'] as String);

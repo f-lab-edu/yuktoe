@@ -97,7 +97,7 @@ class _RecordDetailView extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F8FB),
-        appBar: RecordDetailAppBar(title: record.type.style.title),
+        appBar: RecordDetailAppBar(title: record.detail.style.title),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -112,7 +112,7 @@ class _RecordDetailView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     RecordDetailHeaderCard(
-                      type: record.type,
+                      detail: record.detail,
                       date: vm.displayedDetail.occurredAt,
                     ),
                     Padding(
