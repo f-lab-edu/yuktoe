@@ -1,13 +1,5 @@
 # 🛠️ Home Screen — Presentation Layer 구현 계획
 
-> 본 문서는 홈 화면(`HomeScreen`)의 Presentation Layer를 **어떻게 구현할지** 정한 plan이다.
-> - "무엇을 보여주고 어떻게 반응하는가"의 계약 → spec [`../specs/home_presentation.md`](../specs/home_presentation.md)
-> - 데이터 레이어 계약(Repository/에러 코드) → [`../specs/home_data.md`](../specs/home_data.md)
->
-> spec의 절 번호를 인용하되, **배경지식이 없는 사람이 읽어도 이해되도록** 핵심 맥락을 문장으로 함께 적는다.
-
----
-
 ## 0. 화면 구성과 영역 ↔ ViewModel 대응 (먼저 읽기)
 
 홈은 한 화면 안에 **세로로 쌓인 5개의 독립 영역**으로 구성되고, 영역마다 전용 ViewModel이 하나씩 붙는다. 각 영역은 자기 데이터만 책임지며, 한 영역이 실패해도 다른 영역은 정상 렌더된다(**부분 실패**, spec §4.3).
@@ -32,11 +24,11 @@
 
 각 VM은 `presentation/home/view_models/`에 둔다. 아래는 VM별로 **보유 상태 / 상태별 가능한 이벤트 / 노출값**을 정의한다. "상태별 가능한 이벤트" 표는 *어떤 상태에서 어떤 메서드를 부를 수 있는지*를 명시해, 잘못된 상태에서의 호출(예: 로딩 중 재호출)을 코드/리뷰 단계에서 걸러내기 위한 것이다.
 
-### 1.0 공통 — "현재 아기"는 인자가 아니라 구독으로 (babyId 파라미터 제거)
+### 1.0 공통 — "현재 아기"는 인자가 아니라 구독으로
 
-기존 설계는 `load(babyId)` / `loadFirstPage(babyId)`처럼 **호출마다 babyId를 넘겼다.** 그러나 "현재 선택된 아기"는 `CurrentBabyController` 한 곳이 단일 출처이고, `[A]`/`[C]`/`[E]` VM은 이미 그 변경을 구독한다(§3.3). 같은 값을 호출자가 매번 다시 넘기는 것은 **중복**이고, 호출부가 stale한 babyId를 넘길 위험만 만든다.
+**데이터 로딩 이벤트는 babyId를 인자로 받지 않는다.** "현재 선택된 아기"는 `CurrentBabyController` 한 곳이 단일 출처이고 `[A]`/`[C]`/`[E]` VM이 이미 그 변경을 구독하므로(§3.3), 호출마다 babyId를 다시 넘기면 중복이고 stale한 값을 넘길 위험만 생긴다.
 
-→ **모든 데이터 로딩 이벤트에서 babyId 파라미터를 제거한다.** 각 VM은 생성자에서 `CurrentBabyController`를 주입받아:
+각 VM은 생성자에서 `CurrentBabyController`를 주입받아:
 - 초기값은 `currentBabyController.selectedBabyId`(동기 getter)로 읽고,
 - 이후 변경은 stream 구독으로 받아 내부 `_babyId`에 보관한다(§3.3),
 - 로딩 메서드(`load()` / `loadFirstPage()` / `loadNextPage()` / `refresh()` / `loadAll()`)는 인자 없이 이 `_babyId`를 사용한다. `_babyId == null`이면 아무 것도 하지 않는다,
@@ -48,7 +40,11 @@
 
 현재 아기 1명의 기본 정보(`getBaby`)만 조회하는 단일 비동기 영역. sealed 상태 클래스 없이 `enum ActionState { idle, loading, success, error }` + payload로 충분.
 
-- **보유 상태**: `ActionState _status`, `Baby? _baby`, `AppException? _error`, `String? _babyId`
+- **보유 상태**:
+  - `ActionState _status` — 조회 진행 상태(idle/loading/success/error)
+  - `Baby? _baby` — 조회 성공 시의 아기 정보
+  - `AppException? _error` — 실패 시의 에러(전역 분기 판정에 사용)
+  - `String? _babyId` — 현재 대상 아기 id(`CurrentBabyController`에서 받음)
 - **노출**: `status`, `baby`, `error`, 파생 `String? name`, `String? dateLabel`(formatter 위임, spec §3.2)
 - **상태별 가능한 이벤트**:
 
@@ -67,7 +63,9 @@
 서로 독립인 3개 슬롯(`feed` / `diaper` / `wake`). 슬롯마다 (상태 + 최근 1건)만 있으면 되므로 가벼운 holder로 표현.
 
 - **슬롯 holder**: `({ActionState status, CareRecord? record, AppException? error})`(Dart record 또는 동등한 단순 클래스). "빈 상태"는 별도 값이 아니라 `status == success && record == null`.
-- **보유 상태**: `_feed`, `_diaper`, `_wake` 3개 holder + `String? _babyId`
+- **보유 상태**:
+  - `_feed` / `_diaper` / `_wake` — 세 슬롯 각각의 holder(상태 + 최근 1건 + 에러). 서로 독립
+  - `String? _babyId` — 현재 대상 아기 id
 - **노출**: 세 holder의 status/record/error
 - **상태별 가능한 이벤트** (세 슬롯 각각 독립으로 동일 적용):
 
@@ -86,7 +84,14 @@
 
 첫 페이지와 다음 페이지가 **동시에 다른 상태**일 수 있어 `ActionState` 두 개가 필요. 그 외엔 평범한 리스트 + 커서.
 
-- **보유 상태**: `ActionState _firstPageStatus`, `ActionState _nextPageStatus`, `List<CareRecord> _items`, `String? _nextCursor`, `bool _hasMore`, `AppException? _firstPageError`, `AppException? _nextPageError`, `String? _babyId`
+- **보유 상태**:
+  - `ActionState _firstPageStatus` — 첫 페이지 로딩 상태
+  - `ActionState _nextPageStatus` — 다음 페이지(추가 로드) 상태. 첫 페이지와 별개로 움직임
+  - `List<CareRecord> _items` — 현재까지 쌓인 기록 목록
+  - `String? _nextCursor` — 다음 페이지 요청용 커서(없으면 끝)
+  - `bool _hasMore` — 더 가져올 페이지가 있는지
+  - `AppException? _firstPageError` / `_nextPageError` — 각 페이지 실패 에러
+  - `String? _babyId` — 현재 대상 아기 id
 - **노출**: `firstPageStatus`, `nextPageStatus`, `List<CareRecord> items`(unmodifiable), `hasMore`, 에러들. 빈 상태 = `firstPageStatus == success && items.isEmpty`.
 - **상태별 가능한 이벤트**:
 
@@ -104,32 +109,13 @@
   - `loadNextPage()` — `_hasMore && _nextPageStatus != loading`일 때만. 빈 페이지 방어 + id dedupe(spec §8.4)
   - `refresh()` — pull-to-refresh. 커서/리스트 비우고 첫 페이지부터
   - `prepend(CareRecord)` — 생성 성공 시 리스트 맨 앞에 추가(id dedupe)
-  - `deleteRecord(String recordId)` — **삭제 액션**(아래 §1.3.1)
+  - `deleteRecord(String recordId)` — 삭제 액션. `RecordRepository.deleteRecord(recordId)`를 호출하고 결과를 분기한다: `Ok`/`notFound` → 리스트에서 제거, `unauthorized` → 화면이 전역 분기, 그 외 → 리스트 유지 + 스낵바. 리스트 제거는 내부 private 헬퍼로만 수행한다. (삭제 호출 주체는 타임라인 VM으로 단일화 — §3.3)
+- **공개 변경 이벤트는 `prepend`(생성 반영)와 `deleteRecord`(삭제) 둘**로 한정한다. "서버 삭제 없이 리스트에서만 제거"하는 공개 메서드는 두지 않는다(본 PR 범위에서 그런 외부 호출자가 없음 — spec §1.2·§6.6).
 - **prefetch**: 트리거 판정은 위젯 `ScrollController`가 하고, VM은 `loadNextPage()`만 받는다(spec §5.8).
 
-#### 1.3.1 삭제 메서드 정리 — `removeAndDelete` 재검토 (요청 #3)
+### 1.4 스탑워치 — Breast / Sleep ViewModel 분리 `[D]`
 
-기존 plan/spec(§11.3)에는 삭제 관련 메서드가 **둘** 있었다.
-- `remove(recordId)` — "삭제 동기": 서버 호출 없이 메모리 리스트에서만 제거.
-- `removeAndDelete(recordId, babyId)` — 삭제 요청 + 결과 분기.
-
-검토 결과:
-- **`removeAndDelete`의 용도**: swipe-to-delete(spec §5.9)의 단일 처리 경로다 — `RecordRepository.deleteRecord(recordId)`를 호출하고 결과를 분기한다(`Ok`/`notFound` → 리스트에서 제거, `unauthorized` → 화면이 전역 분기, 그 외 → 리스트 유지 + 스낵바). 삭제 호출 주체를 타임라인 VM으로 단일화(§3.3)하는 한 **이 액션 자체는 필요하다.**
-- **그러나 인자 `babyId`는 불필요**하다 — `deleteRecord`의 계약(home_data §6.10)은 `recordId` 하나만 받는다.
-- **`remove`(로컬 전용)는 공개 이벤트로 둘 필요가 없다.** 본 PR 범위에서 "서버 삭제 없이 리스트에서만 제거"를 부르는 외부 호출자가 없다(기록 상세 화면은 본 PR 범위 밖이고, 화면 복귀 시 재호출도 안 함 — spec §1.2·§6.6). 리스트에서 빼는 동작은 삭제 액션 내부에서만 쓰인다.
-
-→ **결정**:
-- `removeAndDelete(recordId, babyId)` → **`deleteRecord(recordId)`로 이름 변경 + babyId 제거**. 의미가 분명한 이름으로 통일한다.
-- `remove(recordId)`(공개) → **제거**. 리스트 제거는 `deleteRecord` 내부의 private 헬퍼 `_removeFromList(recordId)`로 둔다.
-- 결과적으로 타임라인 VM의 공개 변경 이벤트는 `prepend`(생성 반영)와 `deleteRecord`(삭제) 둘로 명확해진다.
-
-> 스펙 반영: spec §11.3 / §5.9 도 동일하게 수정(메서드 목록 정리, babyId 제거).
-
-### 1.4 스탑워치 — Breast / Sleep ViewModel 분리 `[D]` (요청 #5)
-
-기존엔 `StopwatchViewModel` 하나가 sealed `StopwatchMode(inactive/breast/sleep)`로 두 종류를 모두 다뤘다. 모유수유와 수면은 **보유 필드·전이·저장 변환이 서로 다르고**(모유수유는 좌/우 2채널, 수면은 단일 채널), 한 VM에 둘을 합치면 모드 분기가 코드 전반에 퍼진다.
-
-→ **`BreastStopwatchViewModel`과 `SleepStopwatchViewModel`로 분리한다.** 각 VM은 자기 한 종류만 안다. sealed `StopwatchMode`는 더 이상 필요 없어 **삭제**한다.
+모유수유와 수면은 **보유 필드·전이·저장 변환이 서로 다르므로**(모유수유는 좌/우 2채널, 수면은 단일 채널) **`BreastStopwatchViewModel`과 `SleepStopwatchViewModel`로 분리한다.** 각 VM은 자기 한 종류만 안다.
 
 **단일 활성 보장(스탑워치는 한 번에 하나만)은 화면이 중재한다**(§3.1의 협업 중재와 동일 패턴):
 - 화면은 두 VM의 `bool active`를 보고 **활성인 카드 하나만** 렌더한다(둘 다 inactive면 카드 없음).
@@ -144,7 +130,13 @@
 
 #### 1.4.1 BreastStopwatchViewModel — 모유수유
 
-- **보유 상태**: `bool _active`, 좌/우 누적 `_leftSeconds`·`_rightSeconds`, 좌/우 `_leftPhase`·`_rightPhase`(`idle/running/paused`), **`DateTime? _startedAt`**(단일, §1.4.3), 각 phase의 `running` 진입 wall-clock 기준점, `SaveStatus _saveStatus`, `AppException? _saveError`
+- **보유 상태**:
+  - `bool _active` — 카드가 떠 있는지(false면 화면에 카드 없음)
+  - `_leftSeconds` / `_rightSeconds` — 좌/우 누적 초(`running` 구간의 합)
+  - `_leftPhase` / `_rightPhase` — 좌/우 진행 상태(`idle/running/paused`)
+  - `DateTime? _startedAt` — 좌·우 통틀어 처음 `running`에 진입한 시각(§1.4.3)
+  - 각 phase의 `running` 진입 wall-clock 기준점 — 백그라운드 복귀 시 누적 초 재계산용
+  - `SaveStatus _saveStatus` / `AppException? _saveError` — Complete 후 저장 상태/에러
 - **노출**: `active`, 좌/우 표시문자열·phase, `bool completeEnabled`(좌/우 중 누적 ≥1초), `saveStatus`, `bool hasElapsed`
 - **불변식**(spec §5.3.1): 한쪽을 `running`으로 전환할 때 다른쪽이 `running`이면 자동 `paused`. **양쪽 동시 running 불가**를 메서드 내부에서 보장.
 - **상태별 가능한 이벤트**:
@@ -158,7 +150,13 @@
 
 #### 1.4.2 SleepStopwatchViewModel — 수면
 
-- **보유 상태**: `bool _active`, `_seconds`, `_phase`(`idle/running/paused`), **`DateTime? _startedAt`**, `running` 진입 기준점, `SaveStatus _saveStatus`, `AppException? _saveError`
+- **보유 상태**:
+  - `bool _active` — 카드 노출 여부
+  - `_seconds` — 누적 초(`running` 구간의 합)
+  - `_phase` — 진행 상태(`idle/running/paused`)
+  - `DateTime? _startedAt` — 처음 `running`에 진입한 시각
+  - `running` 진입 wall-clock 기준점 — 누적 초 재계산용
+  - `SaveStatus _saveStatus` / `AppException? _saveError` — 저장 상태/에러
 - **노출**: `active`, 표시문자열, `phase`, `bool completeEnabled`(누적 ≥1초), `saveStatus`, `bool hasElapsed`
 - **상태별 가능한 이벤트**:
 
@@ -171,22 +169,17 @@
 | saving | 저장 중 | 없음 |
 | failed | 저장 실패 | `retry()`, `discard()` |
 
-#### 1.4.3 저장 변환 — 시작 시각은 `startedAt` 하나로 (요청 #4)
+#### 1.4.3 저장 변환
 
-기존엔 모유수유가 `_leftFirstStartedAt`·`_rightFirstStartedAt` **두 개**를 들고, 저장 시 둘 중 non-null의 min을 `BreastDetail.startedAt`으로 썼다. 검토 결과:
-- `BreastDetail`은 좌/우 **소요 분(`leftMinutes`/`rightMinutes`)**만 따로 보유하고, **시작 시각 필드는 `startedAt` 하나뿐**이다(home_data §3.3). 좌/우 소요 분은 누적 초(`_leftSeconds`/`_rightSeconds`)로 계산되지 **시작 시각으로 계산되지 않는다.**
-- 따라서 좌/우 각각의 첫 시작 시각은 필요 없다. "두 시작 시각 중 이른 쪽"은 결국 **"좌·우 통틀어 처음 `running`으로 들어간 순간"** 과 같다.
+시작 시각은 **단일 `_startedAt`** 으로 보관한다. `BreastDetail`은 좌/우 **소요 분(`leftMinutes`/`rightMinutes`)**만 따로 갖고 시작 시각 필드는 `startedAt` 하나뿐이며(home_data §3.3), 소요 분은 누적 초로 계산되지 시작 시각으로 계산되지 않으므로 좌/우 각각의 시작 시각을 따로 둘 필요가 없다.
 
-→ **결정**: 좌/우 시작 시각 두 필드를 **단일 `_startedAt` 하나로 대체**한다. 좌든 우든 **처음으로 `running`에 진입하는 순간** 한 번만 세팅하고(이미 세팅돼 있으면 유지), 이후 pause/resume/측 전환에도 바꾸지 않는다.
-- `BreastDetail.startedAt` = `_startedAt`.
-- `SleepDetail.startedAt` = `_startedAt`(이미 단일).
+- `_startedAt` — 좌든 우든(수면은 단일 채널) **처음 `running`에 진입하는 순간** 한 번만 세팅하고, 이후 pause/resume/측 전환에도 바꾸지 않는다.
+- `BreastDetail.startedAt` / `SleepDetail.startedAt` = `_startedAt`.
 - 공통 `endedAt` = Complete 누른 시점 `DateTime.now().toUtc()`.
 - breast 분 변환: `round(seconds/60)`. 그 쪽이 한 번도 `running`이 아니었으면(`idle` 유지) `null`, 한 번이라도 진입했으면 0 이상 int.
 - sleepType: `inferSleepType(endedAt local)`(spec §6.4).
 
-> 스펙 반영: spec §5.3.4·§6.3·§11.4 의 `leftFirstStartedAt`/`rightFirstStartedAt` → 단일 `startedAt` 으로 수정.
-
-### 1.5 QuickLogButtonsViewModel — 빠른 기록 버튼 줄 `[B]` (요청 #6)
+### 1.5 QuickLogButtonsViewModel — 빠른 기록 버튼 줄 `[B]`
 
 **이 VM이 하는 일 (한 문장):** 홈 상단의 "빠른 기록" 버튼들을 어떤 순서로, 어떤 것만 보여줄지를 **사용자 설정에 맞춰 결정**하고, 그 설정 변경을 **디바이스 로컬에 저장**하는 화면용 상태 보관자다.
 
@@ -197,7 +190,8 @@
 2. 사용자가 순서/노출을 바꾸면 메모리 리스트를 갱신한 뒤 **즉시 같은 키에 다시 직렬화 저장**한다.
 즉 "메모리에 든 리스트 = 화면에 그릴 진실"이고, 그 리스트는 로컬 KV로 영속된다. 서버와 동기화되지 않으므로 **다른 디바이스와 공유되지 않는다.** 로딩/성공/실패 같은 비동기 상태가 없어, 상태 머신 없이 리스트만 들고 즉시 렌더한다.
 
-- **보유 상태**: `List<QuickLogButton> _buttons` (순서 = 리스트 순서) — 모델은 `presentation/home/models/quick_log_button.dart`
+- **보유 상태**:
+  - `List<QuickLogButton> _buttons` — 버튼 목록. **리스트 순서가 곧 화면 노출 순서**. 모델은 `presentation/home/models/quick_log_button.dart`
 - **노출**: `List<QuickLogButton> buttons`(설정 화면용 — off 포함 전체), `List<QuickLogButton> enabledButtons`(홈 줄에 실제로 그릴 on 목록)
 - **상태별 가능한 이벤트**: 별도 상태 없음(항상 즉시 렌더). 가능한 이벤트:
   - `init()` — 로컬에서 동기 로드(없으면 §6.1 기본값)
@@ -285,7 +279,7 @@ graph TD
 생성/삭제 성공 시 `[E]`(prepend/제거)와 `[C]`(슬롯 재호출)가 함께 갱신돼야 한다(spec §6.6). VM 간 직접 참조를 피하기 위해 **화면이 두 VM을 함께 호출하는 콜백**으로 중재한다.
 
 - 입력 dialog / 스탑워치 Complete / swipe 삭제의 성공 콜백에서, 화면이 `context.read<RecordTimelineViewModel>()`와 `context.read<RecentSnapshotViewModel>()`를 함께 호출.
-- **삭제 호출 주체는 타임라인 VM으로 단일화**: swipe-to-delete는 `RecordTimelineViewModel.deleteRecord(recordId)` 하나만 부른다(§1.3.1). 생성은 호출처가 여럿(스탑워치·입력 dialog)이라 각자 `createRecord` 후 화면이 `[E].prepend` + `[C]` 슬롯 재호출로 반영한다.
+- **삭제 호출 주체는 타임라인 VM으로 단일화**: swipe-to-delete는 `RecordTimelineViewModel.deleteRecord(recordId)` 하나만 부른다(§1.3). 생성은 호출처가 여럿(스탑워치·입력 dialog)이라 각자 `createRecord` 후 화면이 `[E].prepend` + `[C]` 슬롯 재호출로 반영한다.
 - **스탑워치 단일 활성**도 화면이 중재한다(§1.4): 두 스탑워치 VM의 `active`를 보고 카드 하나만 렌더, 충돌/이동 dialog 처리.
 
 ### 3.2 화면 구성
@@ -319,7 +313,7 @@ HomeScreen (StatelessWidget)
 
 ---
 
-## 4. 로딩 / 에러 / 빈 상태 처리 — 영역(View/ViewModel)별 (요청 #7)
+## 4. 로딩 / 에러 / 빈 상태 처리 — 영역(View/ViewModel)별
 
 영역마다 상태가 다르므로 **영역별로** 정의한다. 각 절은 "그 영역이 어떤 상태일 때 화면에 무엇을 그리고, 어떤 경우 화면 전체를 다른 라우트로 보내는가"를 적는다. (spec §4.1의 상태 머신을 화면 처리로 옮긴 것.)
 
