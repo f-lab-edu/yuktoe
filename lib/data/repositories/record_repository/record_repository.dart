@@ -16,4 +16,30 @@ abstract interface class RecordRepository {
   Future<Result<RecordMemo>> addMemo(String recordId, String content);
   Future<Result<void>> updateMemo(String memoId, String content);
   Future<Result<void>> deleteMemo(String memoId);
+
+  Future<Result<Page<CareRecord>>> getRecords(
+    String babyId, {
+    String? cursor,
+    int limit = 20,
+  });
+
+  Future<Result<List<CareRecord>>> getRecentFeedings(
+    String babyId, {
+    int limit = 2,
+  });
+
+  Future<Result<List<CareRecord>>> getRecentDiapers(
+    String babyId, {
+    int limit = 2,
+  });
+
+  Future<Result<List<CareRecord>>> getRecentWakes(
+    String babyId, {
+    int limit = 2,
+  });
+
+  Future<Result<CareRecord>> createRecord(
+    String babyId,
+    RecordDetailData detail,
+  );
 }

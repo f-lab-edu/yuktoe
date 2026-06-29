@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:yuktoe/constants/enum/diaper_type.dart';
+import 'package:yuktoe/constants/enum/feeding_type.dart';
 import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/constants/enum/sleep_type.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
@@ -14,6 +15,24 @@ import 'package:yuktoe/domain/models/record/record_detail_data.dart';
 import 'package:yuktoe/domain/models/record/record_memo.dart';
 
 import 'record_repository_impl_test.mocks.dart';
+
+CareRecord _record({
+  required String id,
+  required RecordDetailData detail,
+  RecordType? type,
+  String babyId = 'baby-1',
+  String createdBy = 'user-1',
+  DateTime? createdAt,
+}) {
+  return CareRecord(
+    id: id,
+    babyId: babyId,
+    type: type ?? detail.type,
+    detail: detail,
+    createdBy: createdBy,
+    createdAt: createdAt ?? DateTime(2025, 3, 30, 10),
+  );
+}
 
 @GenerateMocks([RecordService])
 void main() {
@@ -41,6 +60,12 @@ void main() {
     )));
     provideDummy<Result<Page<RecordMemo>>>(
       Result.ok(const Page(items: [], nextCursor: null, hasMore: false)),
+    );
+    provideDummy<Result<Page<CareRecord>>>(
+      Result.ok(const Page(items: [], nextCursor: null, hasMore: false)),
+    );
+    provideDummy<Result<List<CareRecord>>>(
+      Result.ok(const <CareRecord>[]),
     );
     provideDummy<Result<RecordMemo>>(Result.ok(RecordMemo(
       id: '',
@@ -73,7 +98,7 @@ void main() {
       final record = CareRecord(
         id: 'record-1',
         babyId: 'baby-1',
-        type: RecordType.breast,
+        type: RecordType.feeding,
         detail: BreastDetail(
           startedAt: DateTime(2025, 3, 30, 14, 30),
           endedAt: DateTime(2025, 3, 30, 14, 55),
@@ -170,6 +195,374 @@ void main() {
       // then
       expect(result, isA<Error<void>>());
       expect((result as Error<void>).error, same(exception));
+    });
+
+    test('passthrough when service returns notFound', () async {
+      // given
+      final exception = AppException(ErrorCode.notFound, '존재하지 않음');
+      when(mockService.deleteRecord('record-1'))
+          .thenAnswer((_) async => Result.error(exception));
+
+      // when
+      final result = await repository.deleteRecord('record-1');
+
+      // then
+      expect(result, isA<Error<void>>());
+      expect((result as Error<void>).error.code, ErrorCode.notFound);
+    });
+  });
+
+  group('getRecords', () {
+    const babyId = 'baby-1';
+
+    test('first page (cursor=null) passes through', () async {
+      // given
+      final items = [
+        _record(
+          id: 'r-2',
+          type: RecordType.diaper,
+          detail: DiaperDetail(
+            occurredAt: DateTime(2025, 3, 30, 11),
+            diaperType: DiaperType.pee,
+          ),
+        ),
+        _record(
+          id: 'r-1',
+          type: RecordType.diaper,
+          detail: DiaperDetail(
+            occurredAt: DateTime(2025, 3, 30, 10),
+            diaperType: DiaperType.poop,
+          ),
+        ),
+      ];
+      final page = Page<CareRecord>(
+        items: items,
+        nextCursor: 'r-1',
+        hasMore: true,
+      );
+      when(mockService.getRecords(babyId, cursor: null, limit: 20))
+          .thenAnswer((_) async => Result.ok(page));
+
+      // when
+      final result = await repository.getRecords(babyId);
+
+      // then
+      expect(result, isA<Ok<Page<CareRecord>>>());
+      final value = (result as Ok<Page<CareRecord>>).value;
+      expect(value.items, hasLength(2));
+      expect(value.hasMore, isTrue);
+      expect(value.nextCursor, 'r-1');
+      verify(mockService.getRecords(babyId, cursor: null, limit: 20)).called(1);
+    });
+
+    test('next page (with cursor) passes cursor through', () async {
+      // given
+      final page = Page<CareRecord>(
+        items: [
+          _record(
+            id: 'r-0',
+            type: RecordType.diaper,
+            detail: DiaperDetail(
+              occurredAt: DateTime(2025, 3, 30, 9),
+              diaperType: DiaperType.pee,
+            ),
+          ),
+        ],
+        nextCursor: null,
+        hasMore: false,
+      );
+      when(mockService.getRecords(babyId, cursor: 'r-1', limit: 20))
+          .thenAnswer((_) async => Result.ok(page));
+
+      // when
+      final result =
+          await repository.getRecords(babyId, cursor: 'r-1');
+
+      // then
+      final value = (result as Ok<Page<CareRecord>>).value;
+      expect(value.items, hasLength(1));
+      expect(value.hasMore, isFalse);
+      expect(value.nextCursor, isNull);
+    });
+
+    test('empty page returns empty items', () async {
+      // given
+      when(mockService.getRecords(babyId, cursor: null, limit: 20))
+          .thenAnswer(
+        (_) async => Result.ok(
+          const Page<CareRecord>(
+            items: [],
+            nextCursor: null,
+            hasMore: false,
+          ),
+        ),
+      );
+
+      // when
+      final result = await repository.getRecords(babyId);
+
+      // then
+      final value = (result as Ok<Page<CareRecord>>).value;
+      expect(value.items, isEmpty);
+      expect(value.hasMore, isFalse);
+      expect(value.nextCursor, isNull);
+    });
+
+    test('limit 경계 — 0 / 101 → ArgumentError', () {
+      expect(
+        () => repository.getRecords(babyId, limit: 0),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        () => repository.getRecords(babyId, limit: 101),
+        throwsA(isA<ArgumentError>()),
+      );
+      verifyNever(
+        mockService.getRecords(any, cursor: anyNamed('cursor'), limit: anyNamed('limit')),
+      );
+    });
+  });
+
+  group('getRecentFeedings', () {
+    const babyId = 'baby-1';
+    const feedingTypes = {RecordType.feeding};
+
+    test('calls service with feeding type set + feedingEffectiveAt key',
+        () async {
+      // given
+      final items = [
+        _record(
+          id: 'r-1',
+          detail: FormulaDetail(
+            occurredAt: DateTime(2025, 3, 30, 11),
+            amountMl: 120,
+          ),
+        ),
+        _record(
+          id: 'r-2',
+          detail: BreastDetail(
+            startedAt: DateTime(2025, 3, 30, 10),
+            endedAt: DateTime(2025, 3, 30, 10, 30),
+          ),
+        ),
+      ];
+      when(mockService.getRecentRecords(
+        babyId,
+        types: feedingTypes,
+        orderKey: RecordOrderKey.feedingEffectiveAt,
+        limit: 2,
+      )).thenAnswer((_) async => Result.ok(items));
+
+      // when
+      final result = await repository.getRecentFeedings(babyId);
+
+      // then
+      expect(result, isA<Ok<List<CareRecord>>>());
+      expect((result as Ok<List<CareRecord>>).value, hasLength(2));
+      verify(mockService.getRecentRecords(
+        babyId,
+        types: feedingTypes,
+        orderKey: RecordOrderKey.feedingEffectiveAt,
+        limit: 2,
+      )).called(1);
+    });
+
+    test('1건만 있을 때 길이 1 그대로', () async {
+      // given
+      final items = [
+        _record(
+          id: 'r-1',
+          type: RecordType.water,
+          detail: WaterDetail(
+            occurredAt: DateTime(2025, 3, 30, 10),
+            amountMl: 50,
+          ),
+        ),
+      ];
+      when(mockService.getRecentRecords(
+        babyId,
+        types: feedingTypes,
+        orderKey: RecordOrderKey.feedingEffectiveAt,
+        limit: 2,
+      )).thenAnswer((_) async => Result.ok(items));
+
+      // when
+      final result = await repository.getRecentFeedings(babyId);
+
+      // then
+      expect((result as Ok<List<CareRecord>>).value, hasLength(1));
+    });
+
+    test('빈 결과 → Ok([])', () async {
+      // given
+      when(mockService.getRecentRecords(
+        babyId,
+        types: feedingTypes,
+        orderKey: RecordOrderKey.feedingEffectiveAt,
+        limit: 2,
+      )).thenAnswer((_) async => Result.ok(const []));
+
+      // when
+      final result = await repository.getRecentFeedings(babyId);
+
+      // then
+      expect((result as Ok<List<CareRecord>>).value, isEmpty);
+    });
+
+    test('limit 경계 — 0 / 11 → ArgumentError', () {
+      expect(
+        () => repository.getRecentFeedings(babyId, limit: 0),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        () => repository.getRecentFeedings(babyId, limit: 11),
+        throwsA(isA<ArgumentError>()),
+      );
+      verifyNever(mockService.getRecentRecords(
+        any,
+        types: anyNamed('types'),
+        orderKey: anyNamed('orderKey'),
+        limit: anyNamed('limit'),
+      ));
+    });
+  });
+
+  group('getRecentDiapers', () {
+    const babyId = 'baby-1';
+
+    test('calls service with {diaper} + occurredAt key', () async {
+      // given
+      final items = [
+        _record(
+          id: 'r-1',
+          type: RecordType.diaper,
+          detail: DiaperDetail(
+            occurredAt: DateTime(2025, 3, 30, 12),
+            diaperType: DiaperType.mixed,
+          ),
+        ),
+      ];
+      when(mockService.getRecentRecords(
+        babyId,
+        types: {RecordType.diaper},
+        orderKey: RecordOrderKey.occurredAt,
+        limit: 2,
+      )).thenAnswer((_) async => Result.ok(items));
+
+      // when
+      final result = await repository.getRecentDiapers(babyId);
+
+      // then
+      expect((result as Ok<List<CareRecord>>).value, hasLength(1));
+      verify(mockService.getRecentRecords(
+        babyId,
+        types: {RecordType.diaper},
+        orderKey: RecordOrderKey.occurredAt,
+        limit: 2,
+      )).called(1);
+    });
+
+    test('limit 경계 — 0 / 11 → ArgumentError', () {
+      expect(
+        () => repository.getRecentDiapers(babyId, limit: 0),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        () => repository.getRecentDiapers(babyId, limit: 11),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
+
+  group('getRecentWakes', () {
+    const babyId = 'baby-1';
+
+    test('calls service with {sleep} + endedAt key', () async {
+      // given
+      final items = [
+        _record(
+          id: 'r-1',
+          type: RecordType.sleep,
+          detail: SleepDetail(
+            startedAt: DateTime(2025, 3, 30, 9),
+            endedAt: DateTime(2025, 3, 30, 11),
+            sleepType: SleepType.nap,
+          ),
+        ),
+      ];
+      when(mockService.getRecentRecords(
+        babyId,
+        types: {RecordType.sleep},
+        orderKey: RecordOrderKey.endedAt,
+        limit: 2,
+      )).thenAnswer((_) async => Result.ok(items));
+
+      // when
+      final result = await repository.getRecentWakes(babyId);
+
+      // then
+      expect((result as Ok<List<CareRecord>>).value, hasLength(1));
+      verify(mockService.getRecentRecords(
+        babyId,
+        types: {RecordType.sleep},
+        orderKey: RecordOrderKey.endedAt,
+        limit: 2,
+      )).called(1);
+    });
+
+    test('limit 경계 — 0 / 11 → ArgumentError', () {
+      expect(
+        () => repository.getRecentWakes(babyId, limit: 0),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        () => repository.getRecentWakes(babyId, limit: 11),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+  });
+
+  group('createRecord', () {
+    const babyId = 'baby-1';
+
+    test('passes babyId + detail to service (userId 비전달)', () async {
+      // given
+      final detail = FormulaDetail(
+        occurredAt: DateTime(2025, 3, 30, 11),
+        amountMl: 120,
+      );
+      final created = _record(
+        id: 'r-new',
+        detail: detail,
+      );
+      when(mockService.createRecord(babyId, detail))
+          .thenAnswer((_) async => Result.ok(created));
+
+      // when
+      final result = await repository.createRecord(babyId, detail);
+
+      // then
+      expect(result, isA<Ok<CareRecord>>());
+      expect((result as Ok<CareRecord>).value, same(created));
+      verify(mockService.createRecord(babyId, detail)).called(1);
+    });
+
+    test('returns Error when service returns Error', () async {
+      // given
+      final detail = WaterDetail(
+        occurredAt: DateTime(2025, 3, 30, 13),
+        amountMl: 60,
+      );
+      final exception = AppException(ErrorCode.unauthorized, 'no auth');
+      when(mockService.createRecord(babyId, detail))
+          .thenAnswer((_) async => Result.error(exception));
+
+      // when
+      final result = await repository.createRecord(babyId, detail);
+
+      // then
+      expect(result, isA<Error<CareRecord>>());
+      expect((result as Error<CareRecord>).error, same(exception));
     });
   });
 
@@ -405,12 +798,15 @@ void main() {
         rightMinutes: 15,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'breast',
         'started_at': DateTime(2025, 3, 30, 14, 0).toIso8601String(),
         'ended_at': DateTime(2025, 3, 30, 14, 25).toIso8601String(),
         'left_minutes': 10,
         'right_minutes': 15,
       });
       expect(detail.occurredAt, detail.startedAt);
+      expect(detail.type, RecordType.feeding);
+      expect(detail.feedingType, FeedingType.breast);
     });
 
     test('SleepDetail', () {
@@ -446,6 +842,7 @@ void main() {
         amountMl: 150,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'pumpingFeed',
         'occurred_at': DateTime(2025, 3, 30, 11, 0).toIso8601String(),
         'amount_ml': 150,
       });
@@ -457,6 +854,7 @@ void main() {
         amountMl: 200,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'formula',
         'occurred_at': DateTime(2025, 3, 30, 11, 0).toIso8601String(),
         'amount_ml': 200,
       });
@@ -480,6 +878,7 @@ void main() {
         amountMl: 80,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'babyFood',
         'occurred_at': DateTime(2025, 3, 30, 12, 30).toIso8601String(),
         'name': '단호박 이유식',
         'amount_ml': 80,
@@ -518,7 +917,7 @@ void main() {
         rightMinutes: 15,
       );
       final decoded = RecordDetailData.fromJson(
-        RecordType.breast,
+        RecordType.feeding,
         original.toJson(),
       ) as BreastDetail;
       expect(decoded.startedAt, original.startedAt);
@@ -553,6 +952,33 @@ void main() {
       ) as DiaperDetail;
       expect(decoded.occurredAt, original.occurredAt);
       expect(decoded.diaperType, original.diaperType);
+    });
+
+    test('feeding dispatches to leaf by feeding_type', () {
+      final original = BabyFoodDetail(
+        occurredAt: DateTime(2025, 3, 30, 12, 30),
+        name: '단호박 이유식',
+        amountMl: 80,
+      );
+      final decoded = RecordDetailData.fromJson(
+        RecordType.feeding,
+        original.toJson(),
+      );
+      expect(decoded, isA<BabyFoodDetail>());
+      expect(decoded.type, RecordType.feeding);
+      expect((decoded as BabyFoodDetail).feedingType, FeedingType.babyFood);
+      expect(decoded.amountMl, original.amountMl);
+    });
+
+    test('feeding with unknown feeding_type throws', () {
+      expect(
+        () => RecordDetailData.fromJson(RecordType.feeding, const {
+          'feeding_type': 'unknown',
+          'occurred_at': '2025-03-30T11:00:00.000',
+          'amount_ml': 100,
+        }),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 }

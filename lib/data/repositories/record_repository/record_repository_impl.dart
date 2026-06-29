@@ -1,3 +1,4 @@
+import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/repositories/record_repository/record_repository.dart';
 import 'package:yuktoe/data/services/record_service/record_service.dart';
@@ -102,4 +103,80 @@ class RecordRepositoryImpl implements RecordRepository {
     }
   }
 
+  @override
+  Future<Result<Page<CareRecord>>> getRecords(
+    String babyId, {
+    String? cursor,
+    int limit = 20,
+  }) async {
+    _checkLimit(limit, min: 1, max: 100);
+
+    final result = await _recordService.getRecords(
+      babyId,
+      cursor: cursor,
+      limit: limit,
+    );
+    switch (result) {
+      case Ok<Page<CareRecord>>():
+        return Result.ok(result.value);
+      case Error<Page<CareRecord>>():
+        return Result.error(result.error);
+    }
+  }
+
+  @override
+  Future<Result<List<CareRecord>>> getRecentFeedings(
+    String babyId, {
+    int limit = 2,
+  }) {
+    _checkLimit(limit, min: 1, max: 10);
+    return _recordService.getRecentRecords(
+      babyId,
+      types: const {RecordType.feeding},
+      orderKey: RecordOrderKey.feedingEffectiveAt,
+      limit: limit,
+    );
+  }
+
+  @override
+  Future<Result<List<CareRecord>>> getRecentDiapers(
+    String babyId, {
+    int limit = 2,
+  }) {
+    _checkLimit(limit, min: 1, max: 10);
+    return _recordService.getRecentRecords(
+      babyId,
+      types: const {RecordType.diaper},
+      orderKey: RecordOrderKey.occurredAt,
+      limit: limit,
+    );
+  }
+
+  @override
+  Future<Result<List<CareRecord>>> getRecentWakes(
+    String babyId, {
+    int limit = 2,
+  }) {
+    _checkLimit(limit, min: 1, max: 10);
+    return _recordService.getRecentRecords(
+      babyId,
+      types: const {RecordType.sleep},
+      orderKey: RecordOrderKey.endedAt,
+      limit: limit,
+    );
+  }
+
+  @override
+  Future<Result<CareRecord>> createRecord(
+    String babyId,
+    RecordDetailData detail,
+  ) {
+    return _recordService.createRecord(babyId, detail);
+  }
+
+  void _checkLimit(int limit, {required int min, required int max}) {
+    if (limit < min || limit > max) {
+      throw ArgumentError.value(limit, 'limit', 'must be in $min..$max');
+    }
+  }
 }

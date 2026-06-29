@@ -7,10 +7,12 @@ import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:yuktoe/constants/enum/record_type.dart' as _i9;
 import 'package:yuktoe/core/result.dart' as _i4;
 import 'package:yuktoe/data/services/record_service/record_service.dart' as _i2;
 import 'package:yuktoe/domain/models/common/page.dart' as _i7;
 import 'package:yuktoe/domain/models/record/care_record.dart' as _i5;
+import 'package:yuktoe/domain/models/record/record_detail_data.dart' as _i10;
 import 'package:yuktoe/domain/models/record/record_memo.dart' as _i8;
 
 // ignore_for_file: type=lint
@@ -144,4 +146,71 @@ class MockRecordService extends _i1.Mock implements _i2.RecordService {
             ),
           )
           as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<_i7.Page<_i5.CareRecord>>> getRecords(
+    String? babyId, {
+    String? cursor,
+    required int? limit,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getRecords,
+              [babyId],
+              {#cursor: cursor, #limit: limit},
+            ),
+            returnValue: _i3.Future<_i4.Result<_i7.Page<_i5.CareRecord>>>.value(
+              _i6.dummyValue<_i4.Result<_i7.Page<_i5.CareRecord>>>(
+                this,
+                Invocation.method(
+                  #getRecords,
+                  [babyId],
+                  {#cursor: cursor, #limit: limit},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i7.Page<_i5.CareRecord>>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i5.CareRecord>>> getRecentRecords(
+    String? babyId, {
+    required Set<_i9.RecordType>? types,
+    required _i2.RecordOrderKey? orderKey,
+    required int? limit,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getRecentRecords,
+              [babyId],
+              {#types: types, #orderKey: orderKey, #limit: limit},
+            ),
+            returnValue: _i3.Future<_i4.Result<List<_i5.CareRecord>>>.value(
+              _i6.dummyValue<_i4.Result<List<_i5.CareRecord>>>(
+                this,
+                Invocation.method(
+                  #getRecentRecords,
+                  [babyId],
+                  {#types: types, #orderKey: orderKey, #limit: limit},
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<List<_i5.CareRecord>>>);
+
+  @override
+  _i3.Future<_i4.Result<_i5.CareRecord>> createRecord(
+    String? babyId,
+    _i10.RecordDetailData? detail,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#createRecord, [babyId, detail]),
+            returnValue: _i3.Future<_i4.Result<_i5.CareRecord>>.value(
+              _i6.dummyValue<_i4.Result<_i5.CareRecord>>(
+                this,
+                Invocation.method(#createRecord, [babyId, detail]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i5.CareRecord>>);
 }

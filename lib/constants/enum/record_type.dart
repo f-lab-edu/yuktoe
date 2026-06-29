@@ -1,11 +1,8 @@
 enum RecordType {
-  breast,
+  feeding,
   pumping,
-  pumpingFeed,
-  formula,
   sleep,
   diaper,
-  babyFood,
   snack,
   water,
 }
