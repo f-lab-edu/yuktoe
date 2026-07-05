@@ -37,7 +37,7 @@ class RecordTimelineViewModel extends ChangeNotifier {
   }) : _recordRepository = recordRepository,
        _currentBaby = currentBaby {
     _babyId = _currentBaby.selectedBabyId;
-    _subscription = _currentBaby.babyIdStream.listen(_onBabyChanged);
+    _subscription = _currentBaby.selectedBabyIdStream.listen(_onBabyChanged);
   }
 
   ActionState get firstPageStatus => _firstPageStatus;

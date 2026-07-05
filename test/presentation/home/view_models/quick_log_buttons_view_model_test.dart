@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 import 'package:yuktoe/data/local/app_local_storage.dart';
 import 'package:yuktoe/presentation/home/view_models/quick_log_buttons_view_model.dart';
 
@@ -26,8 +26,8 @@ void main() {
 
     expect(vm.buttons.length, 9);
     expect(vm.enabledButtons.length, 9);
-    expect(vm.buttons.first.type, RecordType.formula);
-    expect(vm.buttons[1].type, RecordType.breast);
+    expect(vm.buttons.first.type, QuickLogKind.formula);
+    expect(vm.buttons[1].type, QuickLogKind.breast);
   });
 
   test('저장된 JSON 로드 (순서 + enabled 반영)', () {
@@ -38,9 +38,9 @@ void main() {
     when(storage.quickLogButtonsJson).thenReturn(json);
     final vm = build()..init();
 
-    expect(vm.buttons.first.type, RecordType.water);
+    expect(vm.buttons.first.type, QuickLogKind.water);
     expect(vm.buttons.first.enabled, isFalse);
-    expect(vm.buttons[1].type, RecordType.formula);
+    expect(vm.buttons[1].type, QuickLogKind.formula);
     // 누락된 enum 들이 뒤에 default-on 으로 추가되어 총 9개.
     expect(vm.buttons.length, 9);
   });
@@ -51,7 +51,7 @@ void main() {
 
     await vm.reorder(0, 2); // formula 를 뒤로.
 
-    expect(vm.buttons.first.type, RecordType.breast);
+    expect(vm.buttons.first.type, QuickLogKind.breast);
     verify(storage.setQuickLogButtonsJson(any)).called(1);
   });
 
@@ -59,10 +59,10 @@ void main() {
     when(storage.quickLogButtonsJson).thenReturn(null);
     final vm = build()..init();
 
-    await vm.toggle(RecordType.water);
+    await vm.toggle(QuickLogKind.water);
 
     final water =
-        vm.buttons.firstWhere((b) => b.type == RecordType.water);
+        vm.buttons.firstWhere((b) => b.type == QuickLogKind.water);
     expect(water.enabled, isFalse);
     verify(storage.setQuickLogButtonsJson(any)).called(1);
   });
@@ -83,7 +83,7 @@ void main() {
     final vm = build()..init();
     expect(vm.enabledButtons.length, 1);
 
-    await vm.toggle(RecordType.formula); // 마지막 1개 → 무시.
+    await vm.toggle(QuickLogKind.formula); // 마지막 1개 → 무시.
 
     expect(vm.enabledButtons.length, 1);
     verifyNever(storage.setQuickLogButtonsJson(any));
@@ -97,7 +97,7 @@ void main() {
     when(storage.quickLogButtonsJson).thenReturn(json);
     final vm = build()..init();
 
-    expect(vm.buttons.any((b) => b.type == RecordType.formula), isTrue);
+    expect(vm.buttons.any((b) => b.type == QuickLogKind.formula), isTrue);
     expect(vm.buttons.length, 9); // 미지 항목 제외 + 누락 보충.
   });
 

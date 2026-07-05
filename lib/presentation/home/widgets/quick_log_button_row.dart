@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/presentation/home/home_record_style.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 import 'package:yuktoe/presentation/home/record_type_labels.dart';
 import 'package:yuktoe/presentation/home/view_models/quick_log_buttons_view_model.dart';
 
 /// 빠른 기록 줄 `[B]` — 섹션 헤더("빠른 기록" + "편집") + 흰 원형 버튼 (Figma).
 class QuickLogButtonRow extends StatelessWidget {
-  final void Function(RecordType type) onTapButton;
+  final void Function(QuickLogKind type) onTapButton;
   final VoidCallback onTapSettings;
 
   const QuickLogButtonRow({
@@ -70,7 +70,7 @@ class QuickLogButtonRow extends StatelessWidget {
     );
   }
 
-  Widget _button(RecordType type) {
+  Widget _button(QuickLogKind type) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: InkWell(

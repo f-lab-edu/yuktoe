@@ -29,7 +29,7 @@ class RecentSnapshotViewModel extends ChangeNotifier {
   }) : _recordRepository = recordRepository,
        _currentBaby = currentBaby {
     _babyId = _currentBaby.selectedBabyId;
-    _subscription = _currentBaby.babyIdStream.listen(_onBabyChanged);
+    _subscription = _currentBaby.selectedBabyIdStream.listen(_onBabyChanged);
   }
 
   RecentSlotState get feed => _feed;
@@ -112,11 +112,7 @@ class RecentSnapshotViewModel extends ChangeNotifier {
   /// 타입 → 슬롯 매핑 (plan §1.2). water / snack 은 어느 슬롯에도 속하지 않음.
   static _Slot? _slotForType(RecordType type) {
     return switch (type) {
-      RecordType.breast ||
-      RecordType.formula ||
-      RecordType.pumpingFeed ||
-      RecordType.pumping ||
-      RecordType.babyFood => _Slot.feed,
+      RecordType.feeding || RecordType.pumping => _Slot.feed,
       RecordType.diaper => _Slot.diaper,
       RecordType.sleep => _Slot.wake,
       RecordType.snack || RecordType.water => null,

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
+import 'package:yuktoe/domain/models/record/record_detail_data.dart';
 import 'package:yuktoe/theme/record_type_palette.dart';
 
 class RecordDetailHeaderCard extends StatelessWidget {
-  final RecordType type;
+  final RecordDetailData detail;
   final DateTime date;
 
   const RecordDetailHeaderCard({
     super.key,
-    required this.type,
+    required this.detail,
     required this.date,
   });
 
@@ -17,7 +17,7 @@ class RecordDetailHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = type.style;
+    final style = detail.style;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),

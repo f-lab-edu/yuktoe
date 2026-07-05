@@ -1,11 +1,11 @@
-import 'package:yuktoe/constants/enum/record_type.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 
 /// 빠른 기록 버튼 하나. 리스트에서의 **순서가 곧 화면 노출 순서**다 (spec §6.1).
 ///
 /// leaf value object 로서 자신의 직렬화를 직접 소유한다. 미지의 enum 값은
 /// `fromJson` 이 `null` 을 돌려주어 상위(ViewModel)에서 무시한다(forward-compat).
 class QuickLogButton {
-  final RecordType type;
+  final QuickLogKind type;
   final bool enabled;
 
   const QuickLogButton({required this.type, required this.enabled});
@@ -19,13 +19,7 @@ class QuickLogButton {
   static QuickLogButton? fromJson(Map<String, dynamic> json) {
     final typeName = json['type'];
     if (typeName is! String) return null;
-    RecordType? type;
-    for (final t in RecordType.values) {
-      if (t.name == typeName) {
-        type = t;
-        break;
-      }
-    }
+    final type = QuickLogKind.fromName(typeName);
     if (type == null) return null;
     final enabled = json['enabled'];
     return QuickLogButton(

@@ -122,38 +122,30 @@ class _PreviewRecordRepository implements RecordRepository {
 
   void seedDemo() {
     final now = DateTime.now().toUtc();
-    CareRecord r(RecordType type, RecordDetailData detail) => CareRecord(
+    CareRecord r(RecordDetailData detail) => CareRecord(
       id: 'seed-${_seq++}',
       babyId: 'b1',
-      type: type,
+      type: detail.type,
       detail: detail,
       createdBy: 'demo',
       createdAt: detail.occurredAt,
     );
 
     _store['b1'] = [
-      r(RecordType.formula,
-          FormulaDetail(occurredAt: now.subtract(const Duration(hours: 1)), amountMl: 160)),
-      r(RecordType.diaper,
-          DiaperDetail(occurredAt: now.subtract(const Duration(hours: 2)), diaperType: DiaperType.mixed)),
-      r(RecordType.sleep,
-          SleepDetail(
-            startedAt: now.subtract(const Duration(hours: 5)),
-            endedAt: now.subtract(const Duration(hours: 3)),
-            sleepType: SleepType.nap,
-          )),
-      r(RecordType.babyFood,
-          BabyFoodDetail(occurredAt: now.subtract(const Duration(hours: 6)), name: '단호박', amountMl: 80)),
-      r(RecordType.pumping,
-          PumpingDetail(occurredAt: now.subtract(const Duration(hours: 8)), leftAmountMl: 40, rightAmountMl: 50)),
-      r(RecordType.water,
-          WaterDetail(occurredAt: now.subtract(const Duration(days: 1, hours: 2)), amountMl: 30)),
-      r(RecordType.snack,
-          SnackDetail(occurredAt: now.subtract(const Duration(days: 1, hours: 4)), name: '치즈')),
+      r(FormulaDetail(occurredAt: now.subtract(const Duration(hours: 1)), amountMl: 160)),
+      r(DiaperDetail(occurredAt: now.subtract(const Duration(hours: 2)), diaperType: DiaperType.mixed)),
+      r(SleepDetail(
+        startedAt: now.subtract(const Duration(hours: 5)),
+        endedAt: now.subtract(const Duration(hours: 3)),
+        sleepType: SleepType.nap,
+      )),
+      r(BabyFoodDetail(occurredAt: now.subtract(const Duration(hours: 6)), name: '단호박', amountMl: 80)),
+      r(PumpingDetail(occurredAt: now.subtract(const Duration(hours: 8)), leftAmountMl: 40, rightAmountMl: 50)),
+      r(WaterDetail(occurredAt: now.subtract(const Duration(days: 1, hours: 2)), amountMl: 30)),
+      r(SnackDetail(occurredAt: now.subtract(const Duration(days: 1, hours: 4)), name: '치즈')),
     ];
     _store['b2'] = [
-      r(RecordType.diaper,
-          DiaperDetail(occurredAt: now.subtract(const Duration(minutes: 30)), diaperType: DiaperType.pee)),
+      r(DiaperDetail(occurredAt: now.subtract(const Duration(minutes: 30)), diaperType: DiaperType.pee)),
     ];
   }
 
@@ -184,13 +176,7 @@ class _PreviewRecordRepository implements RecordRepository {
 
   @override
   Future<Result<List<CareRecord>>> getRecentFeedings(String babyId, {int limit = 2}) =>
-      _recent(babyId, {
-        RecordType.breast,
-        RecordType.formula,
-        RecordType.pumpingFeed,
-        RecordType.pumping,
-        RecordType.babyFood,
-      }, limit);
+      _recent(babyId, {RecordType.feeding, RecordType.pumping}, limit);
 
   @override
   Future<Result<List<CareRecord>>> getRecentDiapers(String babyId, {int limit = 2}) =>
@@ -205,7 +191,7 @@ class _PreviewRecordRepository implements RecordRepository {
     final record = CareRecord(
       id: 'gen-${_seq++}',
       babyId: babyId,
-      type: _typeOf(detail),
+      type: detail.type,
       detail: detail,
       createdBy: 'demo',
       createdAt: DateTime.now().toUtc(),
@@ -223,18 +209,6 @@ class _PreviewRecordRepository implements RecordRepository {
     }
     return Error(const AppException(ErrorCode.notFound, 'not found'));
   }
-
-  RecordType _typeOf(RecordDetailData d) => switch (d) {
-    BreastDetail() => RecordType.breast,
-    SleepDetail() => RecordType.sleep,
-    PumpingDetail() => RecordType.pumping,
-    PumpingFeedDetail() => RecordType.pumpingFeed,
-    FormulaDetail() => RecordType.formula,
-    DiaperDetail() => RecordType.diaper,
-    BabyFoodDetail() => RecordType.babyFood,
-    SnackDetail() => RecordType.snack,
-    WaterDetail() => RecordType.water,
-  };
 
   @override
   Future<Result<CareRecord>> getRecord(String recordId) async =>

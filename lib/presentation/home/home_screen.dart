@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/common/utils/action_state.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/core/result.dart';
 import 'package:yuktoe/data/local/app_local_storage.dart';
@@ -233,7 +233,7 @@ class _HomeView extends StatelessWidget {
     );
   }
 
-  Future<void> _onTapButton(BuildContext context, RecordType type) async {
+  Future<void> _onTapButton(BuildContext context, QuickLogKind type) async {
     if (type.isStopwatch) {
       await _startStopwatch(context, type);
       return;
@@ -259,10 +259,10 @@ class _HomeView extends StatelessWidget {
     }
   }
 
-  Future<void> _startStopwatch(BuildContext context, RecordType type) async {
+  Future<void> _startStopwatch(BuildContext context, QuickLogKind type) async {
     final breast = context.read<BreastStopwatchViewModel>();
     final sleep = context.read<SleepStopwatchViewModel>();
-    final isBreast = type == RecordType.breast;
+    final isBreast = type == QuickLogKind.breast;
     final StopwatchController target = isBreast ? breast : sleep;
     final StopwatchController other = isBreast ? sleep : breast;
 

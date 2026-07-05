@@ -23,7 +23,7 @@ void main() {
   CareRecord formula(String id, int ml, DateTime at) => CareRecord(
     id: id,
     babyId: 'b1',
-    type: RecordType.formula,
+    type: RecordType.feeding,
     detail: FormulaDetail(occurredAt: at, amountMl: ml),
     createdBy: 'u',
     createdAt: at,

@@ -2,27 +2,25 @@ import 'dart:async';
 
 import 'package:yuktoe/data/local/app_local_storage.dart';
 
-/// 현재 선택된 아기 id 의 단일 출처(single source of truth).
+/// 앱 전체에서 공유되는 "현재 선택된 아기" 의 application-scope state holder.
 ///
-/// 동기 getter [selectedBabyId] 로 현재값을 즉시 읽을 수 있고,
-/// 변경(select / clear)은 [babyIdStream] 으로 방송된다. 홈의 `[A]`/`[C]`/`[E]`
-/// ViewModel 은 이 stream 을 구독해 baby 전환 시 자기 영역을 재호출한다.
+/// 현재값은 동기 [selectedBabyId] getter 로 읽고, 이후 변화는
+/// [selectedBabyIdStream] 으로 broadcast 한다. broadcast stream 은 늦게
+/// 구독한 listener 에게 마지막 값을 재전송하지 않으므로, 구독자는 구독 시점에
+/// [selectedBabyId] 로 현재값을 먼저 읽고 stream 으로 이후 변화를 받는다.
 class CurrentBabyController {
   final AppLocalStorage _storage;
+  String? _selectedBabyId;
   final StreamController<String?> _controller =
       StreamController<String?>.broadcast();
-
-  String? _selectedBabyId;
 
   CurrentBabyController(AppLocalStorage storage)
     : _storage = storage,
       _selectedBabyId = storage.selectedBabyId;
 
-  /// 현재 선택된 아기 id (없으면 null). 동기 읽기.
   String? get selectedBabyId => _selectedBabyId;
 
-  /// select / clear 시 새 값을 방송하는 broadcast stream.
-  Stream<String?> get babyIdStream => _controller.stream;
+  Stream<String?> get selectedBabyIdStream => _controller.stream;
 
   Future<void> select(String babyId) async {
     await _storage.setSelectedBabyId(babyId);

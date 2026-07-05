@@ -26,7 +26,7 @@ void main() {
   CareRecord dummy() => CareRecord(
     id: 'created',
     babyId: 'b1',
-    type: RecordType.breast,
+    type: RecordType.feeding,
     detail: BreastDetail(
       startedAt: DateTime.utc(2026, 7, 5),
       endedAt: DateTime.utc(2026, 7, 5),

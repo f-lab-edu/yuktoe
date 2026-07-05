@@ -305,7 +305,7 @@ HomeScreen (StatelessWidget)
 `CurrentBabyController`를 **`StreamController` 기반**으로 만들고, ViewModel이 그 stream을 listen한다.
 
 - 컨트롤러: 내부에 `StreamController<String?>.broadcast()` 보유. `select`/`clear` 시 메모리 값 갱신 후 stream에 새 값 `add`. 동기 getter `String? selectedBabyId`는 유지. `dispose()`에서 controller close.
-- 구독: `[A]`/`[C]`/`[E]` VM이 생성자에서 현재값을 `selectedBabyId`로 읽어 `_babyId`에 넣고, `babyIdStream.listen(...)`으로 변경을 받아 `_babyId` 갱신 후 자기 영역을 `loading`으로 리셋 + 재호출(인자 없는 `load()`/`loadAll()`/`loadFirstPage()`). 각 VM은 `StreamSubscription`을 보유하고 `dispose()`에서 cancel.
+- 구독: `[A]`/`[C]`/`[E]` VM이 생성자에서 현재값을 `selectedBabyId`로 읽어 `_babyId`에 넣고, `selectedBabyIdStream.listen(...)`으로 변경을 받아 `_babyId` 갱신 후 자기 영역을 `loading`으로 리셋 + 재호출(인자 없는 `load()`/`loadAll()`/`loadFirstPage()`). 각 VM은 `StreamSubscription`을 보유하고 `dispose()`에서 cancel.
 - `null` emit(로그아웃/clear) → 화면이 spec §4.2 전역 분기(`login`)로 처리.
 - baby 전환 race(spec §8.7): 응답 도착 시 응답 기준 babyId와 현재 `_babyId`를 비교해 stale 응답 폐기.
 

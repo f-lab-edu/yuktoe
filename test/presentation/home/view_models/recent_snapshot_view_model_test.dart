@@ -68,7 +68,7 @@ void main() {
   }
 
   test('loadAll: 슬롯별 success / empty', () async {
-    stubAll(feed: [record(RecordType.formula)], diaper: [], wake: [record(RecordType.sleep)]);
+    stubAll(feed: [record(RecordType.feeding)], diaper: [], wake: [record(RecordType.sleep)]);
     final vm = build();
 
     await vm.loadAll();
@@ -91,7 +91,7 @@ void main() {
     expect(vm.feed.status, ActionState.error);
 
     when(repo.getRecentFeedings('b1', limit: 1))
-        .thenAnswer((_) async => Ok([record(RecordType.formula)]));
+        .thenAnswer((_) async => Ok([record(RecordType.feeding)]));
     await vm.retryFeed();
 
     expect(vm.feed.status, ActionState.success);
@@ -103,7 +103,7 @@ void main() {
     final vm = build();
     await vm.loadAll();
 
-    vm.notifyAfterRecordChanged(record(RecordType.formula));
+    vm.notifyAfterRecordChanged(record(RecordType.feeding));
     await pumpEventQueue();
 
     verify(repo.getRecentFeedings('b1', limit: 1)).called(2); // loadAll + notify

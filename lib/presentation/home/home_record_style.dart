@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 
 /// 홈 화면의 카테고리별 시각 토큰 (Figma "홈-메인" 기준).
 ///
@@ -19,55 +19,55 @@ class HomeRecordStyle {
 
 /// Figma 에서 확정된 4종(formula/breast/diaper/sleep)과, 동일 팔레트 계열로
 /// 맞춘 나머지 5종.
-const Map<RecordType, HomeRecordStyle> _styles = {
-  RecordType.formula: HomeRecordStyle(
+const Map<QuickLogKind, HomeRecordStyle> _styles = {
+  QuickLogKind.formula: HomeRecordStyle(
     dot: Color(0xFF2B7FFF),
     chipBackground: Color(0xFFDBEAFE),
     chipForeground: Color(0xFF155DFC),
   ),
-  RecordType.breast: HomeRecordStyle(
+  QuickLogKind.breast: HomeRecordStyle(
     dot: Color(0xFFFB64B6),
     chipBackground: Color(0xFFFCE7F3),
     chipForeground: Color(0xFFE60076),
   ),
-  RecordType.diaper: HomeRecordStyle(
+  QuickLogKind.diaper: HomeRecordStyle(
     dot: Color(0xFFFDC700),
     chipBackground: Color(0xFFFEF9C2),
     chipForeground: Color(0xFFD08700),
   ),
-  RecordType.sleep: HomeRecordStyle(
+  QuickLogKind.sleep: HomeRecordStyle(
     dot: Color(0xFF7C86FF),
     chipBackground: Color(0xFFE0E7FF),
     chipForeground: Color(0xFF4F39F6),
   ),
-  RecordType.pumping: HomeRecordStyle(
+  QuickLogKind.pumping: HomeRecordStyle(
     dot: Color(0xFF06B6D4),
     chipBackground: Color(0xFFCFFAFE),
     chipForeground: Color(0xFF0E7490),
   ),
-  RecordType.pumpingFeed: HomeRecordStyle(
+  QuickLogKind.pumpingFeed: HomeRecordStyle(
     dot: Color(0xFFFB7185),
     chipBackground: Color(0xFFFFE4E6),
     chipForeground: Color(0xFFE11D48),
   ),
-  RecordType.babyFood: HomeRecordStyle(
+  QuickLogKind.babyFood: HomeRecordStyle(
     dot: Color(0xFF22C55E),
     chipBackground: Color(0xFFDCFCE7),
     chipForeground: Color(0xFF15803D),
   ),
-  RecordType.snack: HomeRecordStyle(
+  QuickLogKind.snack: HomeRecordStyle(
     dot: Color(0xFFF59E0B),
     chipBackground: Color(0xFFFEF3C7),
     chipForeground: Color(0xFFB45309),
   ),
-  RecordType.water: HomeRecordStyle(
+  QuickLogKind.water: HomeRecordStyle(
     dot: Color(0xFF38BDF8),
     chipBackground: Color(0xFFE0F2FE),
     chipForeground: Color(0xFF0369A1),
   ),
 };
 
-extension RecordTypeHomeStyle on RecordType {
+extension QuickLogKindHomeStyle on QuickLogKind {
   HomeRecordStyle get homeStyle => _styles[this]!;
 }
 

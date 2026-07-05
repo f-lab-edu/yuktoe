@@ -33,7 +33,7 @@ class HomeBabyInfoViewModel extends ChangeNotifier {
        _currentBaby = currentBaby,
        _now = now ?? DateTime.now {
     _babyId = _currentBaby.selectedBabyId;
-    _subscription = _currentBaby.babyIdStream.listen(_onBabyChanged);
+    _subscription = _currentBaby.selectedBabyIdStream.listen(_onBabyChanged);
   }
 
   ActionState get status => _status;

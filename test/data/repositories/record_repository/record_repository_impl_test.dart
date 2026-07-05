@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:yuktoe/constants/enum/diaper_type.dart';
+import 'package:yuktoe/constants/enum/feeding_type.dart';
 import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/constants/enum/sleep_type.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
@@ -17,8 +18,8 @@ import 'record_repository_impl_test.mocks.dart';
 
 CareRecord _record({
   required String id,
-  required RecordType type,
   required RecordDetailData detail,
+  RecordType? type,
   String babyId = 'baby-1',
   String createdBy = 'user-1',
   DateTime? createdAt,
@@ -26,7 +27,7 @@ CareRecord _record({
   return CareRecord(
     id: id,
     babyId: babyId,
-    type: type,
+    type: type ?? detail.type,
     detail: detail,
     createdBy: createdBy,
     createdAt: createdAt ?? DateTime(2025, 3, 30, 10),
@@ -97,7 +98,7 @@ void main() {
       final record = CareRecord(
         id: 'record-1',
         babyId: 'baby-1',
-        type: RecordType.breast,
+        type: RecordType.feeding,
         detail: BreastDetail(
           startedAt: DateTime(2025, 3, 30, 14, 30),
           endedAt: DateTime(2025, 3, 30, 14, 55),
@@ -324,13 +325,7 @@ void main() {
 
   group('getRecentFeedings', () {
     const babyId = 'baby-1';
-    final feedingTypes = {
-      RecordType.breast,
-      RecordType.formula,
-      RecordType.pumping,
-      RecordType.pumpingFeed,
-      RecordType.babyFood,
-    };
+    const feedingTypes = {RecordType.feeding};
 
     test('calls service with feeding type set + feedingEffectiveAt key',
         () async {
@@ -338,7 +333,6 @@ void main() {
       final items = [
         _record(
           id: 'r-1',
-          type: RecordType.formula,
           detail: FormulaDetail(
             occurredAt: DateTime(2025, 3, 30, 11),
             amountMl: 120,
@@ -346,7 +340,6 @@ void main() {
         ),
         _record(
           id: 'r-2',
-          type: RecordType.breast,
           detail: BreastDetail(
             startedAt: DateTime(2025, 3, 30, 10),
             endedAt: DateTime(2025, 3, 30, 10, 30),
@@ -540,7 +533,6 @@ void main() {
       );
       final created = _record(
         id: 'r-new',
-        type: RecordType.formula,
         detail: detail,
       );
       when(mockService.createRecord(babyId, detail))
@@ -806,12 +798,15 @@ void main() {
         rightMinutes: 15,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'breast',
         'started_at': DateTime(2025, 3, 30, 14, 0).toIso8601String(),
         'ended_at': DateTime(2025, 3, 30, 14, 25).toIso8601String(),
         'left_minutes': 10,
         'right_minutes': 15,
       });
       expect(detail.occurredAt, detail.startedAt);
+      expect(detail.type, RecordType.feeding);
+      expect(detail.feedingType, FeedingType.breast);
     });
 
     test('SleepDetail', () {
@@ -847,6 +842,7 @@ void main() {
         amountMl: 150,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'pumpingFeed',
         'occurred_at': DateTime(2025, 3, 30, 11, 0).toIso8601String(),
         'amount_ml': 150,
       });
@@ -858,6 +854,7 @@ void main() {
         amountMl: 200,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'formula',
         'occurred_at': DateTime(2025, 3, 30, 11, 0).toIso8601String(),
         'amount_ml': 200,
       });
@@ -881,6 +878,7 @@ void main() {
         amountMl: 80,
       );
       expect(detail.toJson(), {
+        'feeding_type': 'babyFood',
         'occurred_at': DateTime(2025, 3, 30, 12, 30).toIso8601String(),
         'name': '단호박 이유식',
         'amount_ml': 80,
@@ -919,7 +917,7 @@ void main() {
         rightMinutes: 15,
       );
       final decoded = RecordDetailData.fromJson(
-        RecordType.breast,
+        RecordType.feeding,
         original.toJson(),
       ) as BreastDetail;
       expect(decoded.startedAt, original.startedAt);
@@ -954,6 +952,33 @@ void main() {
       ) as DiaperDetail;
       expect(decoded.occurredAt, original.occurredAt);
       expect(decoded.diaperType, original.diaperType);
+    });
+
+    test('feeding dispatches to leaf by feeding_type', () {
+      final original = BabyFoodDetail(
+        occurredAt: DateTime(2025, 3, 30, 12, 30),
+        name: '단호박 이유식',
+        amountMl: 80,
+      );
+      final decoded = RecordDetailData.fromJson(
+        RecordType.feeding,
+        original.toJson(),
+      );
+      expect(decoded, isA<BabyFoodDetail>());
+      expect(decoded.type, RecordType.feeding);
+      expect((decoded as BabyFoodDetail).feedingType, FeedingType.babyFood);
+      expect(decoded.amountMl, original.amountMl);
+    });
+
+    test('feeding with unknown feeding_type throws', () {
+      expect(
+        () => RecordDetailData.fromJson(RecordType.feeding, const {
+          'feeding_type': 'unknown',
+          'occurred_at': '2025-03-30T11:00:00.000',
+          'amount_ml': 100,
+        }),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 }

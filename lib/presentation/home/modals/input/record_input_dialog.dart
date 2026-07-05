@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/constants/enum/diaper_type.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/domain/models/record/record_detail_data.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 import 'package:yuktoe/presentation/home/record_type_labels.dart';
 
 /// 일반 카테고리(breast / sleep 제외 7종)의 입력 dialog (spec §5.5).
@@ -11,7 +11,7 @@ import 'package:yuktoe/presentation/home/record_type_labels.dart';
 /// 리스트/최근 요약 반영은 화면이 담당한다(plan §3.1).
 Future<RecordDetailData?> showRecordInputDialog({
   required BuildContext context,
-  required RecordType type,
+  required QuickLogKind type,
   DateTime Function()? now,
 }) {
   return showDialog<RecordDetailData>(
@@ -24,7 +24,7 @@ Future<RecordDetailData?> showRecordInputDialog({
 }
 
 class _InputDialogController extends ChangeNotifier {
-  final RecordType type;
+  final QuickLogKind type;
   final DateTime Function() now;
 
   final TextEditingController amount = TextEditingController();
@@ -68,11 +68,11 @@ class _InputDialogController extends ChangeNotifier {
   bool get canSave {
     if (isFuture) return false;
     switch (type) {
-      case RecordType.formula:
-      case RecordType.pumpingFeed:
-      case RecordType.water:
+      case QuickLogKind.formula:
+      case QuickLogKind.pumpingFeed:
+      case QuickLogKind.water:
         return _parse(amount) != null;
-      case RecordType.pumping:
+      case QuickLogKind.pumping:
         final l = leftAmount.text.trim().isEmpty ? null : _parse(leftAmount);
         final r = rightAmount.text.trim().isEmpty ? null : _parse(rightAmount);
         final leftValid = leftAmount.text.trim().isEmpty || l != null;
@@ -80,14 +80,14 @@ class _InputDialogController extends ChangeNotifier {
         final anyPresent =
             leftAmount.text.trim().isNotEmpty || rightAmount.text.trim().isNotEmpty;
         return leftValid && rightValid && anyPresent;
-      case RecordType.babyFood:
+      case QuickLogKind.babyFood:
         return _parse(amount) != null;
-      case RecordType.snack:
+      case QuickLogKind.snack:
         return true;
-      case RecordType.diaper:
+      case QuickLogKind.diaper:
         return diaperType != null;
-      case RecordType.breast:
-      case RecordType.sleep:
+      case QuickLogKind.breast:
+      case QuickLogKind.sleep:
         return false; // 스탑워치 타입은 이 dialog 를 쓰지 않음.
     }
   }
@@ -96,31 +96,31 @@ class _InputDialogController extends ChangeNotifier {
     if (!canSave) return null;
     final at = _occurredAt.toUtc();
     switch (type) {
-      case RecordType.formula:
+      case QuickLogKind.formula:
         return FormulaDetail(occurredAt: at, amountMl: _parse(amount)!);
-      case RecordType.pumpingFeed:
+      case QuickLogKind.pumpingFeed:
         return PumpingFeedDetail(occurredAt: at, amountMl: _parse(amount)!);
-      case RecordType.water:
+      case QuickLogKind.water:
         return WaterDetail(occurredAt: at, amountMl: _parse(amount)!);
-      case RecordType.pumping:
+      case QuickLogKind.pumping:
         return PumpingDetail(
           occurredAt: at,
           leftAmountMl: leftAmount.text.trim().isEmpty ? null : _parse(leftAmount),
           rightAmountMl:
               rightAmount.text.trim().isEmpty ? null : _parse(rightAmount),
         );
-      case RecordType.babyFood:
+      case QuickLogKind.babyFood:
         return BabyFoodDetail(
           occurredAt: at,
           name: name.text.trim(),
           amountMl: _parse(amount)!,
         );
-      case RecordType.snack:
+      case QuickLogKind.snack:
         return SnackDetail(occurredAt: at, name: name.text.trim());
-      case RecordType.diaper:
+      case QuickLogKind.diaper:
         return DiaperDetail(occurredAt: at, diaperType: diaperType!);
-      case RecordType.breast:
-      case RecordType.sleep:
+      case QuickLogKind.breast:
+      case QuickLogKind.sleep:
         return null;
     }
   }
@@ -215,28 +215,28 @@ class _RecordInputDialog extends StatelessWidget {
 
   List<Widget> _fields(BuildContext context, _InputDialogController c) {
     switch (c.type) {
-      case RecordType.formula:
-      case RecordType.pumpingFeed:
-      case RecordType.water:
+      case QuickLogKind.formula:
+      case QuickLogKind.pumpingFeed:
+      case QuickLogKind.water:
         return [_amountField(c.amount, '용량 (ml)')];
-      case RecordType.pumping:
+      case QuickLogKind.pumping:
         return [
           _amountField(c.leftAmount, '왼쪽 (ml)'),
           const SizedBox(height: 8),
           _amountField(c.rightAmount, '오른쪽 (ml)'),
         ];
-      case RecordType.babyFood:
+      case QuickLogKind.babyFood:
         return [
           _textField(c.name, '이름 (선택)'),
           const SizedBox(height: 8),
           _amountField(c.amount, '용량 (ml)'),
         ];
-      case RecordType.snack:
+      case QuickLogKind.snack:
         return [_textField(c.name, '이름 (선택)')];
-      case RecordType.diaper:
+      case QuickLogKind.diaper:
         return [_diaperSelector(c)];
-      case RecordType.breast:
-      case RecordType.sleep:
+      case QuickLogKind.breast:
+      case QuickLogKind.sleep:
         return const [];
     }
   }

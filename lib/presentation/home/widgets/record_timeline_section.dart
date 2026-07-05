@@ -7,6 +7,7 @@ import 'package:yuktoe/domain/models/record/care_record.dart';
 import 'package:yuktoe/presentation/home/formatters/header_date_formatter.dart';
 import 'package:yuktoe/presentation/home/formatters/record_chip_formatter.dart';
 import 'package:yuktoe/presentation/home/home_record_style.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 import 'package:yuktoe/presentation/home/record_type_labels.dart';
 import 'package:yuktoe/presentation/home/view_models/home_baby_info_view_model.dart';
 import 'package:yuktoe/presentation/home/view_models/record_timeline_view_model.dart';
@@ -166,7 +167,8 @@ class RecordTimelineSection extends StatelessWidget {
 
   Widget _item(CareRecord record) {
     final chip = formatRecordChip(record);
-    final style = record.type.homeStyle;
+    final kind = QuickLogKind.fromDetail(record.detail);
+    final style = kind.homeStyle;
     final time = DateFormat('HH:mm a').format(record.detail.occurredAt.toLocal());
 
     return Dismissible(
@@ -209,7 +211,7 @@ class RecordTimelineSection extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            record.type.shortLabel,
+                            kind.shortLabel,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,

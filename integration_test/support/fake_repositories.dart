@@ -90,13 +90,7 @@ class FakeRecordRepository implements RecordRepository {
     String babyId, {
     int limit = 2,
   }) =>
-      _recent(babyId, {
-        RecordType.breast,
-        RecordType.formula,
-        RecordType.pumpingFeed,
-        RecordType.pumping,
-        RecordType.babyFood,
-      }, limit);
+      _recent(babyId, {RecordType.feeding, RecordType.pumping}, limit);
 
   @override
   Future<Result<List<CareRecord>>> getRecentDiapers(
@@ -120,7 +114,7 @@ class FakeRecordRepository implements RecordRepository {
     final record = CareRecord(
       id: 'gen-${_seq++}',
       babyId: babyId,
-      type: _typeOf(detail),
+      type: detail.type,
       detail: detail,
       createdBy: 'tester',
       createdAt: DateTime.now().toUtc(),
@@ -139,18 +133,6 @@ class FakeRecordRepository implements RecordRepository {
     }
     return Error(const AppException(ErrorCode.notFound, 'record not found'));
   }
-
-  RecordType _typeOf(RecordDetailData detail) => switch (detail) {
-    BreastDetail() => RecordType.breast,
-    SleepDetail() => RecordType.sleep,
-    PumpingDetail() => RecordType.pumping,
-    PumpingFeedDetail() => RecordType.pumpingFeed,
-    FormulaDetail() => RecordType.formula,
-    DiaperDetail() => RecordType.diaper,
-    BabyFoodDetail() => RecordType.babyFood,
-    SnackDetail() => RecordType.snack,
-    WaterDetail() => RecordType.water,
-  };
 
   // ── 본 통합 테스트에서 쓰지 않는 메서드 ──
   @override

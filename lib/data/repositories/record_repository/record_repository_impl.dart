@@ -132,13 +132,7 @@ class RecordRepositoryImpl implements RecordRepository {
     _checkLimit(limit, min: 1, max: 10);
     return _recordService.getRecentRecords(
       babyId,
-      types: const {
-        RecordType.breast,
-        RecordType.formula,
-        RecordType.pumping,
-        RecordType.pumpingFeed,
-        RecordType.babyFood,
-      },
+      types: const {RecordType.feeding},
       orderKey: RecordOrderKey.feedingEffectiveAt,
       limit: limit,
     );

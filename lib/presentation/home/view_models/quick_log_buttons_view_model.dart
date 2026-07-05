@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:yuktoe/constants/enum/record_type.dart';
 import 'package:yuktoe/data/local/app_local_storage.dart';
 import 'package:yuktoe/presentation/home/models/quick_log_button.dart';
+import 'package:yuktoe/presentation/home/models/quick_log_kind.dart';
 
 /// 빠른 기록 버튼 줄 `[B]` (spec §11.5, plan §1.5).
 ///
@@ -11,16 +11,16 @@ import 'package:yuktoe/presentation/home/models/quick_log_button.dart';
 /// 소비한다. 리스트의 순서가 곧 화면 노출 순서이며, 변경은 즉시 로컬 영속된다.
 class QuickLogButtonsViewModel extends ChangeNotifier {
   /// 커스터마이즈 전 기본 노출 순서 (spec §6.1).
-  static const List<RecordType> defaultOrder = [
-    RecordType.formula,
-    RecordType.breast,
-    RecordType.diaper,
-    RecordType.sleep,
-    RecordType.pumping,
-    RecordType.pumpingFeed,
-    RecordType.babyFood,
-    RecordType.snack,
-    RecordType.water,
+  static const List<QuickLogKind> defaultOrder = [
+    QuickLogKind.formula,
+    QuickLogKind.breast,
+    QuickLogKind.diaper,
+    QuickLogKind.sleep,
+    QuickLogKind.pumping,
+    QuickLogKind.pumpingFeed,
+    QuickLogKind.babyFood,
+    QuickLogKind.snack,
+    QuickLogKind.water,
   ];
 
   final AppLocalStorage _storage;
@@ -48,7 +48,7 @@ class QuickLogButtonsViewModel extends ChangeNotifier {
       if (decoded is! List) return _defaults();
 
       final parsed = <QuickLogButton>[];
-      final seen = <RecordType>{};
+      final seen = <QuickLogKind>{};
       for (final item in decoded) {
         if (item is! Map) continue;
         final button = QuickLogButton.fromJson(Map<String, dynamic>.from(item));
@@ -88,7 +88,7 @@ class QuickLogButtonsViewModel extends ChangeNotifier {
   }
 
   /// enabled 토글 후 영속. 마지막 1개는 끄지 못한다 (spec §5.7).
-  Future<void> toggle(RecordType type) async {
+  Future<void> toggle(QuickLogKind type) async {
     final index = _buttons.indexWhere((b) => b.type == type);
     if (index < 0) return;
 
