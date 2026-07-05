@@ -12,6 +12,8 @@ void main() {
 
   setUp(() {
     mockStorage = MockAppLocalStorage();
+    when(mockStorage.setSelectedBabyId(any)).thenAnswer((_) async {});
+    when(mockStorage.removeSelectedBabyId()).thenAnswer((_) async {});
   });
 
   group('boot initialization', () {
@@ -21,6 +23,7 @@ void main() {
       final controller = CurrentBabyController(mockStorage);
 
       expect(controller.selectedBabyId, isNull);
+      controller.dispose();
     });
 
     test('selectedBabyId is restored from storage on construction', () {
@@ -29,54 +32,61 @@ void main() {
       final controller = CurrentBabyController(mockStorage);
 
       expect(controller.selectedBabyId, 'persisted');
+      controller.dispose();
     });
   });
 
   group('select', () {
-    test('persists to storage, updates memory, and notifies listeners',
-        () async {
+    test('persists to storage, updates memory, and emits on stream', () async {
       when(mockStorage.selectedBabyId).thenReturn(null);
-      when(mockStorage.setSelectedBabyId(any)).thenAnswer((_) async {});
       final controller = CurrentBabyController(mockStorage);
-      var notifyCount = 0;
-      controller.addListener(() => notifyCount++);
+      final emitted = <String?>[];
+      final sub = controller.babyIdStream.listen(emitted.add);
 
       await controller.select('new-id');
+      await pumpEventQueue();
 
       verify(mockStorage.setSelectedBabyId('new-id')).called(1);
       expect(controller.selectedBabyId, 'new-id');
-      expect(notifyCount, 1);
+      expect(emitted, ['new-id']);
+
+      await sub.cancel();
+      controller.dispose();
     });
 
-    test('replaces a previously selected id', () async {
+    test('replaces a previously selected id and emits new value', () async {
       when(mockStorage.selectedBabyId).thenReturn('old-id');
-      when(mockStorage.setSelectedBabyId(any)).thenAnswer((_) async {});
       final controller = CurrentBabyController(mockStorage);
-      var notifyCount = 0;
-      controller.addListener(() => notifyCount++);
+      final emitted = <String?>[];
+      final sub = controller.babyIdStream.listen(emitted.add);
 
       await controller.select('new-id');
+      await pumpEventQueue();
 
-      verify(mockStorage.setSelectedBabyId('new-id')).called(1);
       expect(controller.selectedBabyId, 'new-id');
-      expect(notifyCount, 1);
+      expect(emitted, ['new-id']);
+
+      await sub.cancel();
+      controller.dispose();
     });
   });
 
   group('clear', () {
-    test('removes from storage, clears memory, and notifies listeners',
-        () async {
+    test('removes from storage, clears memory, and emits null', () async {
       when(mockStorage.selectedBabyId).thenReturn('id');
-      when(mockStorage.removeSelectedBabyId()).thenAnswer((_) async {});
       final controller = CurrentBabyController(mockStorage);
-      var notifyCount = 0;
-      controller.addListener(() => notifyCount++);
+      final emitted = <String?>[];
+      final sub = controller.babyIdStream.listen(emitted.add);
 
       await controller.clear();
+      await pumpEventQueue();
 
       verify(mockStorage.removeSelectedBabyId()).called(1);
       expect(controller.selectedBabyId, isNull);
-      expect(notifyCount, 1);
+      expect(emitted, [null]);
+
+      await sub.cancel();
+      controller.dispose();
     });
   });
 }

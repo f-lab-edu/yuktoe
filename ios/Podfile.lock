@@ -39,6 +39,8 @@ PODS:
   - GTMSessionFetcher/Core (3.5.0)
   - GTMSessionFetcher/Full (3.5.0):
     - GTMSessionFetcher/Core
+  - integration_test (0.0.1):
+    - Flutter
   - kakao_flutter_sdk_common (1.10.0):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -58,6 +60,7 @@ DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - Flutter (from `Flutter`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - kakao_flutter_sdk_common (from `.symlinks/plugins/kakao_flutter_sdk_common/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -81,6 +84,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   google_sign_in_ios:
     :path: ".symlinks/plugins/google_sign_in_ios/darwin"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
   kakao_flutter_sdk_common:
     :path: ".symlinks/plugins/kakao_flutter_sdk_common/ios"
   path_provider_foundation:
@@ -102,6 +107,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
+  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   kakao_flutter_sdk_common: a21740b9dd4900f96161f365a2b6ece7a97cbf4f
   path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47

@@ -36,4 +36,33 @@ void main() {
     final restored = AppLocalStorage(await SharedPreferences.getInstance());
     expect(restored.selectedBabyId, 'restored');
   });
+
+  group('quickLogButtonsJson', () {
+    test('null when nothing is stored', () {
+      expect(storage.quickLogButtonsJson, isNull);
+    });
+
+    test('setQuickLogButtonsJson persists the raw string', () async {
+      const json = '[{"type":"formula","enabled":true}]';
+      await storage.setQuickLogButtonsJson(json);
+      expect(storage.quickLogButtonsJson, json);
+    });
+
+    test('removeQuickLogButtonsJson clears the value', () async {
+      await storage.setQuickLogButtonsJson('[]');
+      await storage.removeQuickLogButtonsJson();
+      expect(storage.quickLogButtonsJson, isNull);
+    });
+
+    test('restores value from initial mock state', () async {
+      SharedPreferences.setMockInitialValues({
+        'quick_log_buttons': '[{"type":"water","enabled":false}]',
+      });
+      final restored = AppLocalStorage(await SharedPreferences.getInstance());
+      expect(
+        restored.quickLogButtonsJson,
+        '[{"type":"water","enabled":false}]',
+      );
+    });
+  });
 }
