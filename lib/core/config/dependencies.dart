@@ -31,9 +31,10 @@ List<SingleChildWidget> buildDependencies({
     Provider<AppLocalStorage>(
       create: (context) => AppLocalStorage(context.read<SharedPreferences>()),
     ),
-    ChangeNotifierProvider<CurrentBabyController>(
+    Provider<CurrentBabyController>(
       create: (context) =>
           CurrentBabyController(context.read<AppLocalStorage>()),
+      dispose: (_, controller) => controller.dispose(),
     ),
     Provider<AuthService>(
       create: (context) => SupabaseAuthService(
