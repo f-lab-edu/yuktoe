@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:yuktoe/data/repositories/auth_repository/auth_repository.dart';
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository.dart';
+import 'package:yuktoe/presentation/analytics/views/analytics_screen.dart';
 import 'package:yuktoe/presentation/auth/login/view_models/login_view_model.dart';
 import 'package:yuktoe/presentation/auth/login/views/login_view.dart';
 import 'package:yuktoe/presentation/home/home_screen.dart';
@@ -17,6 +18,7 @@ abstract class AppRoutes {
   static const login = '/login';
   static const welcome = '/welcome';
   static const home = '/home';
+  static const analytics = '/analytics';
   static const babyRegistration = '$welcome/$_babyRegistration';
   static const babyProfileSetup = '$welcome/$_babyProfileSetup';
   static const inviteCode = '$welcome/$_inviteCode';
@@ -39,6 +41,10 @@ final router = GoRouter(
     GoRoute(
       path: AppRoutes.home,
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.analytics,
+      builder: (context, state) => const AnalyticsScreen(),
     ),
     GoRoute(
       path: AppRoutes.welcome,
