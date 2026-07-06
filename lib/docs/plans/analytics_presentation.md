@@ -48,6 +48,52 @@
 | 깨어있는 시간 | `awakeDuration` | 없음(설계상 권장치 비교 미제공, spec FR-019a) |
 | 총 수면 | `totalSleepDuration` | 있음(권장 범위 있을 때) |
 
+## 디자인 참조 (Figma) — 노드 매핑
+
+이 화면은 **소스가 둘**이다: 이 문서(+[spec](../specs/analytics_summary.md))와 [Figma 디자인](https://www.figma.com/design/RfgJFyjzaWYerlwkrdMTIz/%EB%82%B4%EA%BF%88%EC%9D%80%EC%9C%A1%ED%87%B4?node-id=437-2). 헷갈리지 않도록 역할을 고정한다.
+
+- **Figma** = 레이아웃·간격·색·아이콘·타이포 등 **시각(visual) 기준**.
+- **이 문서 + spec** = 지표 정의·배지 의미·표시 규칙·계약 등 **동작/데이터/규칙의 SSOT**.
+- **둘이 충돌하면 이 문서/spec 이 이긴다** (아래 [불일치 기록](#피그마--문서-불일치-기록)). Figma 목업은 초기안이라 spec 과 다른 지점이 있다.
+
+- **파일 key**: `RfgJFyjzaWYerlwkrdMTIz` (내꿈은육퇴)
+- **분석 탭 프레임**: `437:2` (448×992)
+- 본 plan 범위는 **요약 카드 그리드(`437:32`)** 뿐. 헤더·채팅·하단 탭은 범위 밖(아래 표에 위치만 기록).
+
+### 노드 매핑 — 요약 영역 (본 plan)
+
+| plan 요소 / 위젯 | Figma 노드 | 비고 |
+|---|---|---|
+| 요약 카드 그리드(`_SummaryCards`) | `437:32` | 2×2 그리드 (400×320) |
+| 수유량 카드(`FeedingCard`) | `437:33` | Total Feeding |
+| 총 수면 카드(`SleepCard`) | `437:50` | Total Sleep |
+| 기저귀 카드(`DiaperCard`) | `437:66` | Diapers — ⚠️ [불일치 C](#피그마--문서-불일치-기록) |
+| 깨어있는 시간 카드(`AwakeCard`) | — (Figma 에 없음) | ⚠️ [불일치 B](#피그마--문서-불일치-기록): 그 자리엔 Activities 카드(`437:83`) |
+| 카드 내부 — 아이콘 | 각 카드 첫 Container (수유량 예: `437:34`) | 시각 참조만 |
+| 카드 내부 — 라벨 | 수유량 예: `437:39` ("Total Feeding") | 문구는 문서/spec 기준 |
+| 카드 내부 — 값 + 단위 | 수유량 예: `437:42` ("850") / `437:44` ("ml") | |
+| 비교 배지(`MetricComparisonBadge`) | 수유량 예: `437:45` (화살표 `437:46` + 텍스트 `437:49`) | ⚠️ [불일치 A](#피그마--문서-불일치-기록): Figma 는 "vs avg" 증감 표기 |
+
+### 범위 밖 노드 (참조용)
+
+| 요소 | Figma 노드 | 처리 |
+|---|---|---|
+| 화면 제목 "AI Daily Insights" | `437:26` / 텍스트 `437:28` | 제목 문구는 기획/spec 확정 대상 (문서 미규정) |
+| Ask AI Nanny 채팅 영역 | `437:100` | Out of Scope — 별도 feature |
+| 하단 탭 네비 (Home/Logs/Insights/Settings) | `437:3` | 앱 셸 — 범위 밖 |
+
+### 피그마 ↔ 문서 불일치 기록
+
+Figma 목업과 이 문서(spec)가 어긋나는 지점. **모두 문서/spec 을 따른다**(위 역할 고정 참조).
+
+| # | Figma 목업 | 문서/spec (채택) | 근거 |
+|---|---|---|---|
+| A | 배지 = 자기 과거 평균 대비 증감 ("+15ml vs avg") | 배지 = 월령 권장범위 대비 정성 라벨 (적음/적정/많음) | spec FR-003, constitution IV(규칙 SSOT=spec) |
+| B | 4번째 카드 = Activities(활동 세션 수, `437:83`) | 4번째 카드 = 깨어있는 시간(`awakeDuration`) | 데이터 레이어 `getSummary` 5슬롯에 Activities 없음 |
+| C | 기저귀 = "6 changes" 단일 + 배지 있음 | 기저귀 = 소변+대변 합산 + "소변 n / 대변 m" 보조, 배지 없음 | spec FR-002a·FR-019a |
+
+> **구현 주의**: Figma 노드의 텍스트 문구(배지 값·카드 라벨·단위)를 그대로 베끼지 말 것 — 표시 문구·의미·지표 구성은 이 문서와 spec 이 기준이다. Figma 에서는 **배치·간격·색·아이콘·타이포**만 참조한다.
+
 ## Technical Context
 
 - **Language/Version**: Dart (Flutter), strict typing
@@ -198,6 +244,7 @@ AnalyticsScreen (StatelessWidget)                       ← 진입점
 ```
 
 - **로딩/에러는 영역 단위**(코디네이터 `state`)로 한 번 처리한다. 4개 카드는 조회가 **성공한 뒤에만** 그려지며, 그때 각 카드는 자기 카드 ViewModel 의 내용을 본다.
+- 각 위젯의 시각(레이아웃·색·아이콘) 기준은 [디자인 참조(Figma) 노드 매핑](#디자인-참조-figma--노드-매핑)을 본다 — 단, 표시 문구·지표 구성은 이 문서/spec 이 기준이다.
 
 ### Screen 진입점 — Provider 연결
 
