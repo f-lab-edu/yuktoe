@@ -48,4 +48,33 @@ class MockAppLocalStorage extends _i1.Mock implements _i2.AppLocalStorage {
             returnValueForMissingStub: _i3.Future<void>.value(),
           )
           as _i3.Future<void>);
+
+  @override
+  String? activeConversationId(String? babyId) =>
+      (super.noSuchMethod(Invocation.method(#activeConversationId, [babyId]))
+          as String?);
+
+  @override
+  _i3.Future<void> setActiveConversationId(
+    String? babyId,
+    String? conversationId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#setActiveConversationId, [
+              babyId,
+              conversationId,
+            ]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> removeActiveConversationId(String? babyId) =>
+      (super.noSuchMethod(
+            Invocation.method(#removeActiveConversationId, [babyId]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }
