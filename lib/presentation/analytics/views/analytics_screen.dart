@@ -3,13 +3,18 @@ import 'package:provider/provider.dart';
 import 'package:yuktoe/common/utils/action_state.dart';
 import 'package:yuktoe/core/error/app_exception.dart';
 import 'package:yuktoe/data/repositories/analytics_repository/analytics_repository.dart';
+import 'package:yuktoe/data/repositories/baby_repository/baby_repository.dart';
+import 'package:yuktoe/data/repositories/chat_repository/chat_repository.dart';
 import 'package:yuktoe/presentation/analytics/view_models/analytics_view_model.dart';
 import 'package:yuktoe/presentation/analytics/view_models/awake_card_view_model.dart';
+import 'package:yuktoe/presentation/analytics/view_models/chat_input_controller.dart';
+import 'package:yuktoe/presentation/analytics/view_models/chat_view_model.dart';
 import 'package:yuktoe/presentation/analytics/view_models/diaper_card_view_model.dart';
 import 'package:yuktoe/presentation/analytics/view_models/feeding_card_view_model.dart';
 import 'package:yuktoe/presentation/analytics/view_models/sleep_card_view_model.dart';
 import 'package:yuktoe/presentation/analytics/widgets/analytics_summary_states.dart';
 import 'package:yuktoe/presentation/analytics/widgets/awake_card.dart';
+import 'package:yuktoe/presentation/analytics/widgets/chat/chat_section.dart';
 import 'package:yuktoe/presentation/analytics/widgets/diaper_card.dart';
 import 'package:yuktoe/presentation/analytics/widgets/feeding_card.dart';
 import 'package:yuktoe/presentation/analytics/widgets/sleep_card.dart';
@@ -23,18 +28,49 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProxyProvider<CurrentBabyController, AnalyticsViewModel>(
-      create: (context) => AnalyticsViewModel(
-        analyticsRepository: context.read<AnalyticsRepository>(),
-      ),
-      // 진입 시 + 선택 아기가 바뀔 때마다 호출. build 단계에서 notifyListeners 가
-      // 일어나지 않도록 프레임 종료 후 loadFor 를 부른다(중복 가드가 재조회 방지).
-      update: (context, currentBaby, viewModel) {
-        final vm = viewModel!;
-        final babyId = currentBaby.selectedBabyId;
-        WidgetsBinding.instance.addPostFrameCallback((_) => vm.loadFor(babyId));
-        return vm;
-      },
+    // 요약 코디네이터 + 채팅 3개 ViewModel 을 화면 단위로 제공한다. 선택 아기가
+    // 바뀌면 각 VM 의 진입/재초기화 메서드를 호출한다(build 중 notifyListeners 를
+    // 피하려 프레임 종료 후 호출, 각 VM 의 중복 가드가 재조회를 방지).
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProxyProvider<CurrentBabyController, AnalyticsViewModel>(
+          create: (context) => AnalyticsViewModel(
+            analyticsRepository: context.read<AnalyticsRepository>(),
+          ),
+          update: (context, currentBaby, viewModel) {
+            final vm = viewModel!;
+            final babyId = currentBaby.selectedBabyId;
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => vm.loadFor(babyId));
+            return vm;
+          },
+        ),
+        ChangeNotifierProxyProvider<CurrentBabyController, ChatViewModel>(
+          create: (context) => ChatViewModel(
+            chatRepository: context.read<ChatRepository>(),
+            babyRepository: context.read<BabyRepository>(),
+          ),
+          update: (context, currentBaby, viewModel) {
+            final vm = viewModel!;
+            final babyId = currentBaby.selectedBabyId;
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => vm.enterTab(babyId));
+            return vm;
+          },
+        ),
+        ChangeNotifierProxyProvider<CurrentBabyController, ChatInputController>(
+          create: (context) => ChatInputController(
+            chatRepository: context.read<ChatRepository>(),
+          ),
+          update: (context, currentBaby, controller) {
+            final ctrl = controller!;
+            final babyId = currentBaby.selectedBabyId;
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => ctrl.loadFor(babyId));
+            return ctrl;
+          },
+        ),
+      ],
       child: const _AnalyticsView(),
     );
   }
@@ -53,7 +89,8 @@ class _AnalyticsView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _AnalyticsSummarySection(),
-            // 채팅 영역(Ask AI Nanny)은 별도 feature 범위 — 여기서는 미배치.
+            SizedBox(height: 16),
+            ChatSection(),
           ],
         ),
       ),
