@@ -10,6 +10,8 @@ import 'package:yuktoe/data/repositories/baby_registration_repository/baby_regis
 import 'package:yuktoe/data/repositories/baby_registration_repository/baby_registration_repository_impl.dart';
 import 'package:yuktoe/data/repositories/baby_repository/baby_repository.dart';
 import 'package:yuktoe/data/repositories/baby_repository/baby_repository_impl.dart';
+import 'package:yuktoe/data/repositories/chat_repository/chat_repository.dart';
+import 'package:yuktoe/data/repositories/chat_repository/chat_repository_impl.dart';
 import 'package:yuktoe/data/repositories/record_repository/record_repository.dart';
 import 'package:yuktoe/data/repositories/record_repository/record_repository_impl.dart';
 import 'package:yuktoe/data/services/auth_service/auth_service.dart';
@@ -18,6 +20,8 @@ import 'package:yuktoe/data/services/baby_registration_service/baby_registration
 import 'package:yuktoe/data/services/baby_registration_service/supabase_baby_registration_service.dart';
 import 'package:yuktoe/data/services/baby_service/baby_service.dart';
 import 'package:yuktoe/data/services/baby_service/supabase_baby_service.dart';
+import 'package:yuktoe/data/services/chat_service/chat_service.dart';
+import 'package:yuktoe/data/services/chat_service/supabase_chat_service.dart';
 import 'package:yuktoe/data/services/record_service/record_service.dart';
 import 'package:yuktoe/data/services/record_service/supabase_record_service.dart';
 import 'package:yuktoe/presentation/common/current_baby_controller.dart';
@@ -67,6 +71,16 @@ List<SingleChildWidget> buildDependencies({
     Provider<BabyRegistrationRepository>(
       create: (context) => BabyRegistrationRepositoryImpl(
         context.read<BabyRegistrationService>(),
+      ),
+    ),
+    Provider<ChatService>(
+      create: (context) =>
+          SupabaseChatService(client: context.read<SupabaseClient>()),
+    ),
+    Provider<ChatRepository>(
+      create: (context) => ChatRepositoryImpl(
+        context.read<ChatService>(),
+        context.read<AppLocalStorage>(),
       ),
     ),
   ];
